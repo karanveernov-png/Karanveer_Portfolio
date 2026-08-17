@@ -1259,22 +1259,17 @@ function PathCard({ item, index }) {
 // ============================================================
 // SIGNAL (CONTACT) SECTION
 // ============================================================
-const TERMINAL_COMMANDS = {
-  help: () => "Available: projects, resume, github, linkedin, contact, hire",
-  projects: () => { document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" }); return "Navigating to projects..."; },
-  resume: () => { window.open("/resume.pdf", "_blank"); return "Opening resume..."; },
-  github: () => { window.open(PROFILE.github, "_blank"); return `Opening GitHub...`; },
-  linkedin: () => { window.open(PROFILE.linkedin, "_blank"); return "Opening LinkedIn..."; },
-  contact: () => { document.getElementById("contact-form")?.focus(); return "Focusing contact form..."; },
-  hire: () => "Ready to connect! Fill out the form or email: " + PROFILE.email,
-  clear: () => "__CLEAR__",
-};
-
 function Terminal() {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState([{ type: "system", text: "Welcome. Type 'help' to see commands." }]);
   const endRef = useRef(null);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [history]);
+
+  useEffect(() => {
+    // Bulletproof check: Only scroll if the user has actually typed a command
+    if (history.length > 1) {
+      endRef.current?.scrollIntoView({ behavior: "smooth" }); 
+    }
+  }, [history]);
 
   const run = () => {
     const cmd = input.trim().toLowerCase();
@@ -1537,9 +1532,14 @@ export default function Portfolio() {
   const [activeSection, setActiveSection] = useState("home");
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  const handleBootComplete = useCallback(() => {
+   const handleBootComplete = useCallback(() => {
     setBooting(false);
-    setTimeout(() => setVisible(true), 50);
+    
+    // Wait for React to finish drawing the main page before scrolling
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      setVisible(true);
+    }, 50);
   }, []);
 
   useEffect(() => {
