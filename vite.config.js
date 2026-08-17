@@ -11,9 +11,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          three: ['three', '@react-three/fiber', '@react-three/drei'],
-          motion: ['framer-motion', 'gsap'],
+        manualChunks(id) {
+          if (
+            id.includes('three') ||
+            id.includes('@react-three/fiber') ||
+            id.includes('@react-three/drei')
+          ) {
+            return 'three';
+          }
+          if (id.includes('framer-motion') || id.includes('gsap')) {
+            return 'motion';
+          }
         },
       },
     },

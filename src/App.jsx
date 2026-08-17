@@ -121,7 +121,20 @@ const CAREER_PATH = [
 },
 ];
 // ============================================================
-// BOOT SEQUENCE
+// BOOT SEQUENCE DATA
+// ============================================================
+const BOOT_LINES = [
+  "Initializing Neural Core...",
+  "Loading React Runtime...",
+  "Loading Projects...",
+  "Connecting Data Systems...",
+  "Loading AI Modules...",
+  "Synchronizing Portfolio...",
+  "System Ready.",
+];
+
+// ============================================================
+// BOOT SEQUENCE COMPONENT
 // ============================================================
 function BootSequence({ onComplete }) {
   const [lines, setLines] = useState([]);
@@ -205,7 +218,6 @@ function BootSequence({ onComplete }) {
     </div>
   );
 }
-
 // ============================================================
 // CUSTOM CURSOR
 // ============================================================
