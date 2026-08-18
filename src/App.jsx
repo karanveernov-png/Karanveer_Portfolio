@@ -10,6 +10,7 @@ const PROFILE = {
   github: "https://github.com/karanveernov-png",
   linkedin: "https://www.linkedin.com/in/karanveer-singh-0562663b5",
   email: "karanveersinghk014@gmail.com",
+  phone: "+91 9464276670",
 };
 const SKILLS = [
   { id: "python", name: "Python", level: 90, category: "core", connections: ["pandas", "numpy", "streamlit", "ai"] },
@@ -620,7 +621,7 @@ function Hero() {
           <div style={{ position: "absolute", top: "50%", left: "50%", width: 0, height: 0, transformStyle: "preserve-3d" }}>
             <div className="orbit-tag" style={{ "--r": "380px", "--dur": "35s", "--delay": "0s" }}>SQL</div>
             <div className="orbit-tag" style={{ "--r": "380px", "--dur": "35s", "--delay": "-17.5s" }}>Pandas</div>
-            <div className="orbit-tag" style={{ "--r": "280px", "--dur": "25s", "--delay": "-5s" }}>Docker</div>
+            <div className="orbit-tag" style={{ "--r": "280px", "--dur": "25s", "--delay": "-5s" }}>React</div>
             <div className="orbit-tag" style={{ "--r": "280px", "--dur": "25s", "--delay": "-17s" }}>FastAPI</div>
             <div className="orbit-tag" style={{ "--r": "180px", "--dur": "15s", "--delay": "-2s" }}>Python</div>
             <div className="orbit-tag" style={{ "--r": "180px", "--dur": "15s", "--delay": "-9.5s" }}>AI</div>
@@ -1912,8 +1913,15 @@ function CertificatesSection({ onOpenCert }) {
     <div id="certificates" style={{ padding: "80px 20px", maxWidth: 1000, margin: "0 auto", position: "relative", zIndex: 1 }}>
       <SectionMeta index="04.5" label="ACHIEVEMENTS" />
       
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32, flexWrap: "wrap", gap: 20 }}>
-        <div>
+      {/* Updated header flexbox to keep items aligned properly on mobile */}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        marginBottom: 32, 
+        gap: 16 
+      }}>
+        <div style={{ flex: 1 }}>
           <SectionHeading>Certificates</SectionHeading>
           <SectionSub>Here are some of my certifications and achievements.</SectionSub>
         </div>
@@ -1922,7 +1930,8 @@ function CertificatesSection({ onOpenCert }) {
           background: "linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.02))",
           border: "1px solid rgba(255, 215, 0, 0.2)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 0 20px rgba(255, 215, 0, 0.1)"
+          boxShadow: "0 0 20px rgba(255, 215, 0, 0.1)",
+          flexShrink: 0 // Prevents the badge from shrinking or wrapping
         }}>
           <span style={{ fontSize: 24 }}>⭐</span>
         </div>
@@ -2085,8 +2094,52 @@ function PathCard({ item, index }) {
 }
 
 // ============================================================
-// SIGNAL (CONTACT) SECTION
+// SIGNAL (CONTACT) SECTION — enhanced with visual contact card
 // ============================================================
+
+// Star field used inside the contact section background
+function ContactStarField() {
+  const stars = Array.from({ length: 60 }, (_, i) => ({
+    id: i,
+    top: `${Math.random() * 100}%`,
+    left: `${Math.random() * 100}%`,
+    size: Math.random() * 2 + 0.5,
+    opacity: Math.random() * 0.5 + 0.15,
+    animDelay: `${Math.random() * 4}s`,
+  }));
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+      {stars.map((s) => (
+        <div key={s.id} style={{
+          position: "absolute", top: s.top, left: s.left,
+          width: s.size, height: s.size, borderRadius: "50%",
+          background: "#00E5FF", opacity: s.opacity,
+          animation: `contactTwinkle 3s ${s.animDelay} infinite alternate ease-in-out`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+// Contact info row
+function ContactInfoItem({ icon, label, value }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 }}>
+      <div style={{
+        width: 38, height: 38, borderRadius: 8,
+        background: "rgba(0,229,255,0.1)", border: "1px solid rgba(0,229,255,0.2)",
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2,
+      }}>
+        <span style={{ fontSize: 16 }}>{icon}</span>
+      </div>
+      <div>
+        <div style={{ color: "#F8FAFC", fontWeight: 600, fontSize: 15, marginBottom: 2, fontFamily: "'Space Grotesk'" }}>{label}</div>
+        <div style={{ color: "#64748B", fontSize: 14, fontFamily: "'Inter'" }}>{value}</div>
+      </div>
+    </div>
+  );
+}
+
 const TERMINAL_COMMANDS = {
   help: () => "Commands: about · skills · email · github · linkedin · clear",
   about: () => "Karanveer Singh — B.Tech CSE @ Rayat Bahra University. Building AI products and data systems.",
@@ -2103,9 +2156,7 @@ function Terminal() {
   const endRef = useRef(null);
 
   useEffect(() => {
-    if (history.length > 1) {
-      endRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
+    if (history.length > 1) endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [history]);
 
   const run = () => {
@@ -2125,10 +2176,12 @@ function Terminal() {
     <div style={{
       background: "rgba(0,0,0,0.6)", border: "1px solid rgba(0,229,255,0.2)",
       borderRadius: 16, padding: 20, fontFamily: "'JetBrains Mono'", fontSize: 13,
-      maxHeight: 280, display: "flex", flexDirection: "column", overflow: "hidden",
+      height: 280, display: "flex", flexDirection: "column", overflow: "hidden",
     }}>
       <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-        {["#ff5f57", "#febc2e", "#28c840"].map((c, i) => <div key={i} style={{ width: 12, height: 12, borderRadius: "50%", background: c }} />)}
+        {["#ff5f57", "#febc2e", "#28c840"].map((c, i) => (
+          <div key={i} style={{ width: 12, height: 12, borderRadius: "50%", background: c }} />
+        ))}
       </div>
       <div style={{ flex: 1, overflow: "auto", marginBottom: 12 }}>
         {history.map((h, i) => (
@@ -2149,159 +2202,202 @@ function Terminal() {
   );
 }
 
-// ── EmailJS config — fill these in from your EmailJS dashboard ──
-const EMAILJS_SERVICE_ID  = "YOUR_SERVICE_ID";   // e.g. "service_xxxxxxx"
-const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";  // e.g. "template_xxxxxxx"
-const EMAILJS_PUBLIC_KEY  = "YOUR_PUBLIC_KEY";   // e.g. "aBcDeFgHiJkLmNoPq"
-
 function SignalSection() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
-  const [status, setStatus] = useState({ type: "", text: "" }); // type: "success" | "error" | "sending" | ""
+  const [sent, setSent] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => setIsMobile(window.innerWidth < 900);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Load EmailJS SDK once
-  useEffect(() => {
-    if (window.emailjs) return;
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
-    script.onload = () => window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-    document.head.appendChild(script);
-  }, []);
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const openMailto = () => {
+  const handleSubmit = () => {
+    if (!form.name || !form.email || !form.message) return;
+    // Fall back to mailto so it actually works without a backend
     const sub  = encodeURIComponent(form.subject || "Portfolio Contact");
-    const body = encodeURIComponent(
-      `Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`
-    );
+    const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`);
     window.location.href = `mailto:${PROFILE.email}?subject=${sub}&body=${body}`;
+    setSent(true);
+    setTimeout(() => setSent(false), 3000);
+    setForm({ name: "", email: "", subject: "", message: "" });
   };
 
-  const submit = async () => {
-    if (!form.name || !form.email || !form.message) {
-      setStatus({ type: "error", text: "Please fill in all required fields." });
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) {
-      setStatus({ type: "error", text: "Please enter a valid email address." });
-      return;
-    }
-
-    // If EmailJS isn't configured yet, fall back to mailto
-    if (
-      EMAILJS_SERVICE_ID  === "YOUR_SERVICE_ID" ||
-      EMAILJS_TEMPLATE_ID === "YOUR_TEMPLATE_ID" ||
-      EMAILJS_PUBLIC_KEY  === "YOUR_PUBLIC_KEY"
-    ) {
-      openMailto();
-      return;
-    }
-
-    setStatus({ type: "sending", text: "Sending…" });
-
-    try {
-      await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-        from_name:    form.name,
-        from_email:   form.email,
-        subject:      form.subject || "Portfolio Contact",
-        message:      form.message,
-        to_email:     PROFILE.email,
-        reply_to:     form.email,
-      });
-      setStatus({ type: "success", text: "Message sent! I'll get back to you soon." });
-      setForm({ name: "", email: "", subject: "", message: "" });
-      setTimeout(() => setStatus({ type: "", text: "" }), 5000);
-    } catch (err) {
-      console.error("EmailJS error:", err);
-      setStatus({
-        type: "error",
-        text: "Couldn't send via form. Click below to email directly.",
-      });
-    }
+  const inputStyle = {
+    width: "100%", background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(0,229,255,0.15)", borderRadius: 10,
+    padding: "11px 14px", color: "#F8FAFC", fontSize: 14,
+    outline: "none", boxSizing: "border-box",
+    fontFamily: "'Inter', sans-serif", transition: "border-color 0.2s",
   };
+
+  const SOCIAL = [
+    { icon: "⌥", label: "GitHub",    href: PROFILE.github },
+    { icon: "in", label: "LinkedIn",  href: PROFILE.linkedin },
+    { icon: "@",  label: "Email",     href: `mailto:${PROFILE.email}` },
+  ];
 
   return (
-    <div id="contact" style={{ padding: "80px 20px", maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-      <SectionMeta index="07" label="SIGNAL" />
-      <SectionHeading>Let's Connect</SectionHeading>
-      <SectionSub>Open to opportunities in data analytics, full-stack development, and AI engineering.</SectionSub>
+    <>
+      <style>{`
+        @keyframes contactTwinkle { from { opacity: 0.15; } to { opacity: 0.7; } }
+        @keyframes contactFloatBtn { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .signal-input:focus { border-color: #00E5FF !important; }
+        .signal-input::placeholder { color: #334d66; }
+        .signal-social:hover { background: rgba(0,229,255,0.18) !important; transform: translateY(-3px); }
+        .signal-send:hover { box-shadow: 0 6px 28px rgba(0,229,255,0.35) !important; }
+      `}</style>
 
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 32 }}>
-        <Terminal />
-        <div>
-          {status.text && (
+      {/* Floating email shortcut */}
+      <a href={`mailto:${PROFILE.email}`} style={{
+        position: "fixed", bottom: 72, right: 16, zIndex: 900,
+        width: 46, height: 46, borderRadius: "50%",
+        background: "linear-gradient(135deg, #00E5FF, #7C3AED)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        boxShadow: "0 4px 20px rgba(0,229,255,0.35)",
+        animation: "contactFloatBtn 3s ease-in-out infinite",
+        textDecoration: "none", fontSize: 20,
+      }}>✉</a>
+
+      <section id="contact" style={{
+        position: "relative", overflow: "hidden",
+        padding: isMobile ? "80px 20px" : "100px 20px",
+      }}>
+        <ContactStarField />
+
+        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          <SectionMeta index="07" label="SIGNAL" />
+          <SectionHeading>Let's Connect</SectionHeading>
+          <SectionSub>Open to opportunities in data analytics, full-stack development, and AI engineering.</SectionSub>
+
+          <div style={{ display: "flex", gap: isMobile ? 40 : 60, flexWrap: "wrap", alignItems: "flex-start" }}>
+
+            {/* ── Left: contact info + terminal ── */}
+<div style={{ flex: "1 1 320px", minWidth: 260 }}>
+
+  {/* Badge */}
+  <div style={{
+    display: "inline-block", border: "1px solid rgba(0,229,255,0.25)",
+    borderRadius: 6, padding: "5px 14px",
+    color: "#00E5FF88", fontSize: 11, fontWeight: 600,
+    letterSpacing: "2px", textTransform: "uppercase",
+    marginBottom: 28, fontFamily: "'JetBrains Mono'",
+  }}>GET IN TOUCH</div>
+
+  <ContactInfoItem icon="📧" label="Email"        value={PROFILE.email} />
+  <ContactInfoItem icon="📞" label="Phone"        value={PROFILE.phone} />
+  <ContactInfoItem icon="📌" label="Location"     value="Rupnagar,Punjab, India" />
+  <ContactInfoItem icon="⚡" label="Availability" value="Open to internships, freelance & collaborations" />
+
+  {/* Terminal */}
+  <div style={{ marginTop: 28 }}>
+    <div style={{ color: "#F8FAFC44", fontSize: 11, letterSpacing: "0.2em", marginBottom: 10, fontFamily: "'JetBrains Mono'" }}>
+      TERMINAL — try &apos;help&apos;
+    </div>
+    <Terminal />
+  </div>
+</div>
+
+            {/* ── Right: contact form card ── */}
             <div style={{
-              background: status.type === "error" ? "rgba(255,80,80,0.1)" : "rgba(0,255,198,0.1)",
-              border: `1px solid ${status.type === "error" ? "rgba(255,80,80,0.3)" : "rgba(0,255,198,0.3)"}`,
-              borderRadius: 10, padding: "12px 16px", marginBottom: 20,
-              color: status.type === "error" ? "#FF6B6B" : "#00FFC6", fontSize: 13,
-              display: "flex", flexDirection: "column", gap: 8,
+              flex: "1 1 320px", minWidth: 300,
+              background: "rgba(10,18,40,0.85)",
+              border: "1px solid rgba(0,229,255,0.12)",
+              borderRadius: 20, padding: "30px 26px",
+              backdropFilter: "blur(12px)",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
             }}>
-              {status.text}
-              {status.type === "error" && (
-                <button onClick={openMailto} style={{
-                  background: "none", border: "1px solid rgba(255,107,107,0.4)", borderRadius: 8,
-                  padding: "6px 12px", color: "#FF6B6B", fontSize: 12, cursor: "pointer",
-                  fontFamily: "'Inter'", alignSelf: "flex-start",
-                }}>
-                  Open in Email Client →
-                </button>
-              )}
-            </div>
-          )}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {[
-              { id: "name", label: "Name *", type: "text", placeholder: "Your name" },
-              { id: "email", label: "Email *", type: "email", placeholder: "your@email.com" },
-              { id: "subject", label: "Subject", type: "text", placeholder: "What's this about?" },
-            ].map(f => (
-              <div key={f.id}>
-                <label style={{ display: "block", color: "#F8FAFC66", fontSize: 12, marginBottom: 6, fontFamily: "'JetBrains Mono'" }}>{f.label}</label>
-                <input type={f.type} value={form[f.id]} onChange={e => setForm(p => ({ ...p, [f.id]: e.target.value }))} placeholder={f.placeholder}
-                  style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "12px 16px", color: "#F8FAFC", fontSize: 14, fontFamily: "'Inter'", outline: "none", boxSizing: "border-box" }}
+              {/* Accent dot */}
+              <div style={{
+                width: 10, height: 10, borderRadius: "50%",
+                background: "#00E5FF", marginLeft: "auto", marginBottom: 20,
+                boxShadow: "0 0 10px #00E5FF",
+              }} />
+
+              {[
+                { id: "name",    label: "Your Name",  type: "text",  placeholder: "Enter your name"  },
+                { id: "email",   label: "Your Email", type: "email", placeholder: "Enter your email" },
+                { id: "subject", label: "Subject",    type: "text",  placeholder: "What's this about?" },
+              ].map(f => (
+                <div key={f.id} style={{ marginBottom: 16 }}>
+                  <label style={{ display: "block", color: "#F8FAFC88", fontSize: 12, fontWeight: 600, marginBottom: 6, fontFamily: "'JetBrains Mono'" }}>
+                    {f.label}
+                  </label>
+                  <input className="signal-input" style={inputStyle}
+                    type={f.type} name={f.id} value={form[f.id]}
+                    onChange={handleChange} placeholder={f.placeholder}
+                  />
+                </div>
+              ))}
+
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: "block", color: "#F8FAFC88", fontSize: 12, fontWeight: 600, marginBottom: 6, fontFamily: "'JetBrains Mono'" }}>
+                  Message
+                </label>
+                <textarea className="signal-input"
+                  style={{ ...inputStyle, resize: "vertical", minHeight: 110 }}
+                  name="message" value={form.message}
+                  onChange={handleChange} placeholder="Tell me about your project..."
                 />
               </div>
-            ))}
-            <div>
-              <label style={{ display: "block", color: "#F8FAFC66", fontSize: 12, marginBottom: 6, fontFamily: "'JetBrains Mono'" }}>Message *</label>
-              <textarea value={form.message} onChange={e => setForm(p => ({ ...p, message: e.target.value }))} placeholder="Tell me about your project..." rows={5}
-                style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "12px 16px", color: "#F8FAFC", fontSize: 14, fontFamily: "'Inter'", outline: "none", resize: "vertical", boxSizing: "border-box" }}
-              />
-            </div>
-            <button
-              onClick={submit}
-              disabled={status.type === "sending"}
-              style={{
-                background: status.type === "sending"
-                  ? "rgba(0,229,255,0.2)"
+
+              <button className="signal-send" onClick={handleSubmit} style={{
+                width: "100%", padding: "13px",
+                background: sent
+                  ? "linear-gradient(90deg, #059669, #10b981)"
                   : "linear-gradient(135deg, #00E5FF, #7C3AED)",
-                border: "none", borderRadius: 12, padding: "14px",
-                color: status.type === "sending" ? "#00E5FF" : "#050816",
+                border: "none", borderRadius: 12,
+                color: sent ? "#fff" : "#050812",
                 fontSize: 14, fontWeight: 700,
-                cursor: status.type === "sending" ? "not-allowed" : "pointer",
-                fontFamily: "'Inter'", transition: "all 0.3s",
+                cursor: "pointer", display: "flex", alignItems: "center",
+                justifyContent: "center", gap: 8,
+                transition: "all 0.25s",
+                boxShadow: "0 4px 18px rgba(0,229,255,0.25)",
+                fontFamily: "'Inter', sans-serif",
               }}>
-              {status.type === "sending" ? "Sending…" : "Send Message →"}
-            </button>
-            <div style={{ textAlign: "center", color: "#F8FAFC33", fontSize: 12, fontFamily: "'JetBrains Mono'" }}>
-              or{" "}
-              <a href={`mailto:${PROFILE.email}`} style={{ color: "#00E5FF88", textDecoration: "none" }}
-                onMouseEnter={e => e.target.style.color = "#00E5FF"}
-                onMouseLeave={e => e.target.style.color = "#00E5FF88"}>
-                email directly
-              </a>
+                {sent ? "Opening Email Client ✓" : "Send Message →"}
+              </button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div style={{
+            height: 1, background: "linear-gradient(90deg, transparent, rgba(0,229,255,0.2), transparent)",
+            margin: "60px 0 40px",
+          }} />
+
+          {/* Social links */}
+          <div>
+            <p style={{ color: "#F8FAFC44", fontSize: 11, fontWeight: 600,
+              letterSpacing: "1px", marginBottom: 16, textTransform: "uppercase",
+              fontFamily: "'JetBrains Mono'" }}>
+              Let&apos;s connect
+            </p>
+            <div style={{ display: "flex", gap: 12 }}>
+              {SOCIAL.map(({ icon, label, href }) => (
+                <a key={label} href={href} target="_blank" rel="noopener noreferrer"
+                  className="signal-social" title={label}
+                  style={{
+                    width: 44, height: 44, borderRadius: "50%",
+                    border: "1px solid rgba(0,229,255,0.2)",
+                    background: "rgba(0,229,255,0.06)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: "all 0.25s", textDecoration: "none",
+                    color: "#00E5FF", fontSize: 14, fontFamily: "'JetBrains Mono'",
+                    fontWeight: 700,
+                  }}>
+                  {icon}
+                </a>
+              ))}
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </>
   );
 }
 
