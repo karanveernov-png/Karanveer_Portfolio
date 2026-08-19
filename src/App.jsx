@@ -78,7 +78,7 @@ const CERTIFICATES = [
     image: "infosys-cert.png",
     logo: "🐍",
     color: "#00E5FF",
-    link: "https://example.com/verify",
+    link: "https://verify.onwingspan.com/",
     // --- NEW FIELDS FOR DETAILED VIEW ---
     skills: ["Python", "Backend", "APIs", "Database"],
     credentialId: "INFOSYS-PYTHON-2026",
@@ -110,7 +110,7 @@ const CERTIFICATES = [
     image: "/prompt-engineering-cert.png", // Save your certificate image in /public/ with this name
     logo: "🤖",
     color: "#F59E0B", // Vibrant amber/gold matching the Simplilearn branding
-    link: "https://www.simplilearn.com/skillup-certificate-search", // Or your direct verification URL
+    link: "https://simpli-web.app.link/e/5fQpOWiSI5b", // Or your direct verification URL
     // --- NEW FIELDS FOR DETAILED VIEW ---
     skills: ["Prompt Engineering", "Generative AI", "LLMs", "AI Prompting"],
     credentialId: "10510029",
