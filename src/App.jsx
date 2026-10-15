@@ -1,2667 +1,2965 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+// ============================================================================
+// PROJECT ABYSS — MAIN APPLICATION
+// All Section Zones, Modals, Quick Palette, and Root Portfolio Component
+// ============================================================================
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import {
+  PROFILE, ZONES, SKILL_DOMAINS, SKILLS,
+  PROJECTS, CERTIFICATES, MILESTONES, CAREER_PATH
+} from "./data.js";
+import { OceanicCanvas, OceanParticles } from "./Background.jsx";
+import { useReveal, ExpeditionNavigation, SurfaceZone } from "./Navigation.jsx";
 
-// ============================================================
-// DATA CONFIGURATION
-// ============================================================
-const PROFILE = {
-  name: "KARANVEER SINGH",
-  initials: "KVS",
-  roles: ["B.Tech CSE Student", "AI Engineer", "Intelligent Automation"],
-  github: "https://github.com/karanveernov-png",
-  linkedin: "https://www.linkedin.com/in/karanveer-singh-0562663b5",
-  email: "karanveersinghk014@gmail.com",
-  phone: "+91 9464276670",
-};
-const SKILLS = [
-  { id: "python", name: "Python", level: 90, category: "core", connections: ["pandas", "numpy", "streamlit", "ai"] },
-  { id: "pandas", name: "Pandas", level: 88, category: "data", connections: ["python", "numpy", "matplotlib"] },
-  { id: "numpy", name: "NumPy", level: 85, category: "data", connections: ["python", "pandas"] },
-  { id: "matplotlib", name: "Matplotlib", level: 82, category: "data", connections: ["pandas", "python"] },
-  { id: "streamlit", name: "Streamlit", level: 85, category: "frontend", connections: ["python", "ai"] },
-  { id: "supabase", name: "Supabase", level: 80, category: "backend", connections: ["python", "json"] },
-  { id: "git", name: "Git & GitHub", level: 85, category: "tools", connections: ["vscode"] },
-  { id: "vscode", name: "VS Code", level: 90, category: "tools", connections: ["git", "python"] },
-  { id: "ai", name: "AI Prompting", level: 88, category: "ai", connections: ["python", "groq", "sarvam"] },
-  { id: "groq", name: "Groq API", level: 80, category: "ai", connections: ["ai", "python"] },
-  { id: "sarvam", name: "Sarvam AI API", level: 80, category: "ai", connections: ["ai", "python"] },
-  { id: "javascript", name: "JavaScript", level: 40, category: "frontend", connections: ["react"] },
-  { id: "react", name: "React (Learning)", level: 30, category: "learning", connections: ["javascript"] },
-  { id: "fastapi", name: "FastAPI (Learning)", level: 30, category: "learning", connections: ["python"] },
-];
 
-const PROJECTS = [
-{
-  id: "brainblitz",
-  title: "BrainBlitz",
-  subtitle: "AI-Powered Quiz Platform",
-  description:
-    "AI-powered quiz platform that generates customized MCQs, helping students practice, test their knowledge, and learn smarter.",
-  // ── Drop your screenshot in /public/ and update this path ──
-  image: "brainblitz-preview.png",
-  tech: ["Python", "Streamlit", "AI", "Groq API"],
-  color: "#00E5FF",
-  github: "https://github.com/karanveernov-png/streamlit-quiz-app",
-  live: "https://app-quiz-app-sny6pij5jtq9dbkjkdramj.streamlit.app/",
-  category: "AI Product",
-  architecture: ["Streamlit", "Python", "AI Engine", "Groq API"]
- },
-  {
-  id: "studora",
-  title: "Studora",
-  subtitle: "College Analytics Platform",
-  description:
-    "AI-powered platform for analyzing college data, generating insights, and visualizing student performance through interactive dashboards.",
-  // ── Drop your screenshot in /public/ and update this path ──
-  image: "/studora-preview.png",
-  tech: ["Python", "Streamlit", "Pandas", "Groq API", "Matplotlib"],
-  color: "#7C3AED",
-  github: "https://github.com/karanveernov-png/Academia",
-  live: "https://studoraacademia.streamlit.app/",
-  category: "Data Analytics",
-  architecture: [
-    "Streamlit Dashboard",
-    "Pandas Data Pipeline",
-    "Groq AI Engine",
-    "Matplotlib Visualization"
-  ]
-},
-];
-//  CERtuffications
+// ============================================================================
+// ZONE B — THE OPEN OCEAN (TECHNICAL CAPABILITIES & SONAR HYDROGRAPHY)
+// ============================================================================
+export function OpenOceanCapabilities() {
+  const [selectedSkillId, setSelectedSkillId] = useState("python");
+  const [activeDomain, setActiveDomain] = useState("all");
 
-const CERTIFICATES = [
-  {
-    id: "infosys-python",
-    title: "Infosys Course Completion Certificate In Backend Python",
-    issuer: "Infosys",
-    date: "April 2026",
-    description: "Successfully completed comprehensive backend development course focusing on Python programming, API development, database management, and server-side architecture.",
-    image: "infosys-cert.png",
-    logo: "🐍",
-    color: "#00E5FF",
-    link: "https://verify.onwingspan.com/",
-    // --- NEW FIELDS FOR DETAILED VIEW ---
-    skills: ["Python", "Backend", "APIs", "Database"],
-    credentialId: "INFOSYS-PYTHON-2026",
-    status: "Verified",
-    issueDate: "April 21, 2026"
-  },
-  {
-    id: "icisft-paper",
-    title: "ICISFT Rayat Bahra Research Paper 2026",
-    issuer: "ICISFT",
-    date: "March 2026",
-    description: "Successfully published and presented a research paper on advanced computing technologies at the ICISFT 2026 conference.",
-    image: "icisft-cert.png",
-    logo: "📄",
-    color: "#2DD4BF",
-    link: "https://example.com/verify",
-    // --- NEW FIELDS FOR DETAILED VIEW ---
-    skills: ["Research", "Technical Writing", "Advanced Computing", "Presentation"],
-    credentialId: "ICISFT-RB-2026",
-    status: "Verified",
-    issueDate: "March 15, 2026"
-  },
-  {
-    id: "prompt-engineering-simplilearn",
-    title: "Introduction to Prompt Engineering",
-    issuer: "Simplilearn SkillUp",
-    date: "July 2026",
-    description: "Successfully completed the online course covering core principles of prompt engineering, optimizing LLM responses, and practical AI workflow integration.",
-    image: "/prompt-engineering-cert.png", // Save your certificate image in /public/ with this name
-    logo: "🤖",
-    color: "#F59E0B", // Vibrant amber/gold matching the Simplilearn branding
-    link: "https://simpli-web.app.link/e/5fQpOWiSI5b", // Or your direct verification URL
-    // --- NEW FIELDS FOR DETAILED VIEW ---
-    skills: ["Prompt Engineering", "Generative AI", "LLMs", "AI Prompting"],
-    credentialId: "10510029",
-    status: "Verified",
-    issueDate: "July 25, 2026"
-  },
-];
+  const selectedSkill = useMemo(
+    () => SKILLS.find((s) => s.id === selectedSkillId) || SKILLS[0],
+    [selectedSkillId]
+  );
 
-const MILESTONES = [
-  {
-    year: "2024",
-    title: "Started B.Tech CSE",
-    desc: "Began the computer science journey. Mastered core foundations like Data Structures, Algorithms, and DBMS.",
-  },
-  {
-    year: "2025",
-    title: "Data Analytics & Foundations",
-    desc: "Dove deep into Python, Pandas, and Matplotlib. Started turning noisy tables into visual insights and decisions.",
-  },
-  {
-    year: "Early 2026",
-    title: "AI Integration & Prompting",
-    desc: "Experimented with Groq, Sarvam AI APIs, and local LLMs. Discovered a passion for making machines think.",
-  },
-  {
-    year: "Mid 2026",
-    title: "Launched BrainBliz & Studora",
-    desc: "Shipped two production AI products end-to-end using Streamlit, handling the entire workflow from database to UI.",
-  },
-  {
-    year: "Summer 2026",
-    title: "Industrial Training & Upskilling",
-    desc: "Completed software development tasks and tackled advanced coursework in data science and Python programming.",
-  },
-  {
-    year: "Future",
-    title: "AI Engineering",
-    desc: "Building toward production-grade intelligent automation and comprehensive machine learning applications.",
-  },
-];
+  const connectedIds = useMemo(
+    () => new Set(selectedSkill.connections),
+    [selectedSkill]
+  );
 
-const CAREER_PATH = [
-  {
-    title: "AI & Full Stack Projects",
-    org: "Independent Projects",
-    period: "2026 Jan — Now",
-    desc: "Built and deployed BrainBliz and Studora, integrating AI APIs, data analytics libraries, and database systems.",
-  },
-  {
-    title: "B.Tech CSE (3rd Year)",
-    org: "Rayat Bahra University",
-    period: "2024 — Present",
-    desc: "Completing core coursework in Data Structures & Algorithms, Operating Systems, and DBMS with high academic performance.",
-  },
-  {
-    title: "Python Tinkerer",
-    org: "Where it started",
-    period: "2026 — Now",
-    desc: "Automation scripts and early experiments. Discovered a passion for intelligent automation and data logic.",
-  },
-  {
-    title: "Data Analytics",
-    org: "Where it started",
-    period: "2026 — Now",
-    desc: "Exploring the fundamentals of data analytics, working with Python libraries (Pandas, NumPy, Matplotlib), SQL queries, and visualization tools like Power BI and Tableau. Building small projects to analyze datasets, uncover insights, and present findings through clear dashboards and reports.",
-  },
-];
-
-const BOOT_LINES = [
-  "Initializing Neural Core...",
-  "Loading React Runtime...",
-  "Loading Projects...",
-  "Connecting Data Systems...",
-  "Loading AI Modules...",
-  "Synchronizing Portfolio...",
-  "System Ready.",
-];
-
-// ============================================================
-// BOOT SEQUENCE COMPONENT
-// ============================================================
-function BootSequence({ onComplete }) {
-  const [lines, setLines] = useState([]);
-  const [progress, setProgress] = useState(0);
-  const [done, setDone] = useState(false);
-  const [fadeOut, setFadeOut] = useState(false);
-
-  useEffect(() => {
-    let lineIdx = 0;
-    const totalDuration = 2800;
-    const lineInterval = totalDuration / BOOT_LINES.length;
-
-    const addLine = () => {
-      if (lineIdx < BOOT_LINES.length) {
-        setLines(prev => [...prev, BOOT_LINES[lineIdx]]);
-        setProgress(Math.round(((lineIdx + 1) / BOOT_LINES.length) * 100));
-        lineIdx++;
-        if (lineIdx < BOOT_LINES.length) {
-          setTimeout(addLine, lineInterval);
-        } else {
-          setTimeout(() => {
-            setDone(true);
-            setTimeout(() => {
-              setFadeOut(true);
-              setTimeout(onComplete, 800);
-            }, 400);
-          }, 400);
-        }
-      }
-    };
-    setTimeout(addLine, 300);
-  }, [onComplete]);
+  const [revealRef, revealStyle] = useReveal();
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: "#050816",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      zIndex: 9999, fontFamily: "'JetBrains Mono', monospace",
-      transition: "opacity 0.8s ease", opacity: fadeOut ? 0 : 1,
-      padding: "0 20px",
-    }}>
-      <div style={{ width: "min(520px, 90vw)" }}>
-        <div style={{ marginBottom: 32, textAlign: "center" }}>
-          <div style={{
-            fontSize: 11, letterSpacing: "0.25em", color: "#00E5FF",
-            textTransform: "uppercase", marginBottom: 8, opacity: 0.7,
-          }}>KARANVEER SINGH — PORTFOLIO v2.0</div>
-          <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, transparent, #00E5FF44, transparent)" }} />
+    <section
+      id="capabilities"
+      ref={revealRef}
+      className="abyss-section-contain"
+      style={{
+        padding: "130px clamp(24px, 6vw, 96px)",
+        position: "relative",
+        zIndex: 2,
+        maxWidth: 1320,
+        margin: "0 auto",
+        ...revealStyle,
+      }}
+    >
+      <div style={{ marginBottom: 52 }}>
+        <div
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.24em",
+            color: "#8CD0E3",
+            marginBottom: 14,
+          }}
+        >
+          ZONE B // 180m EPIPELAGIC STRATUM — TECHNICAL CAPABILITIES
         </div>
-        <div style={{ minHeight: 200 }}>
-          {lines.map((line, i) => (
-            <div key={i} style={{
-              display: "flex", alignItems: "center", gap: 12,
-              marginBottom: 10, animation: "fadeInLine 0.3s ease forwards",
-            }}>
-              <span style={{ color: done && i === lines.length - 1 ? "#00FFC6" : "#00E5FF", fontSize: 12 }}>
-                {done && i === lines.length - 1 ? "✓" : "›"}
-              </span>
-              <span style={{
-                color: done && i === lines.length - 1 ? "#00FFC6" : i === lines.length - 1 ? "#F8FAFC" : "#F8FAFC88",
-                fontSize: 13, letterSpacing: "0.05em",
-              }}>{line}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{ marginTop: 32 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ color: "#F8FAFC44", fontSize: 11 }}>LOADING</span>
-            <span style={{ color: "#00E5FF", fontSize: 11 }}>{progress}%</span>
-          </div>
-          <div style={{ height: 2, background: "#ffffff0a", borderRadius: 2, overflow: "hidden" }}>
-            <div style={{
-              height: "100%", borderRadius: 2,
-              background: "linear-gradient(90deg, #7C3AED, #00E5FF, #00FFC6)",
-              width: `${progress}%`, transition: "width 0.4s ease",
-              boxShadow: "0 0 12px #00E5FF80",
-            }} />
-          </div>
-        </div>
+        <h2
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(36px, 5.5vw, 68px)",
+            fontWeight: 500,
+            color: "#F4F8FA",
+            lineHeight: 1.05,
+            marginBottom: 18,
+          }}
+        >
+          Connected systems across the water column.
+        </h2>
+        <p
+          style={{
+            color: "#C4D4E0",
+            fontSize: 16,
+            lineHeight: 1.68,
+            maxWidth: 680,
+          }}
+        >
+          Rather than arbitrary percentage bars, capabilities are mapped by how they
+          interlock in production — from Python data pipelines and SQL schemas to Groq
+          and Sarvam AI inference engines delivered through interactive web surfaces.
+        </p>
       </div>
-      <style>{`@keyframes fadeInLine { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }`}</style>
-    </div>
-  );
-}
 
-// ============================================================
-// CUSTOM CURSOR (desktop only)
-// ============================================================
-function CustomCursor() {
-  const dotRef = useRef(null);
-  const ringRef = useRef(null);
-  const pos = useRef({ x: 0, y: 0 });
-  const ring = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    if (window.innerWidth < 768) return;
-    const onMove = (e) => {
-      pos.current = { x: e.clientX, y: e.clientY };
-      if (dotRef.current) dotRef.current.style.transform = `translate(${e.clientX - 8}px, ${e.clientY - 8}px)`;
-    };
-    let raf;
-    const animate = () => {
-      ring.current.x += (pos.current.x - ring.current.x) * 0.12;
-      ring.current.y += (pos.current.y - ring.current.y) * 0.12;
-      if (ringRef.current) ringRef.current.style.transform = `translate(${ring.current.x - 16}px, ${ring.current.y - 16}px)`;
-      raf = requestAnimationFrame(animate);
-    };
-    animate();
-    window.addEventListener("mousemove", onMove);
-    return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(raf); };
-  }, []);
-
-  if (typeof window !== "undefined" && window.innerWidth < 768) return null;
-  return (
-    <>
-      <div ref={dotRef} style={{ position: "fixed", width: 16, height: 16, borderRadius: "50%", background: "#00E5FF", zIndex: 99999, pointerEvents: "none", boxShadow: "0 0 10px #00E5FF", willChange: "transform", top: 0, left: 0 }} />
-      <div ref={ringRef} style={{ position: "fixed", width: 32, height: 32, borderRadius: "50%", border: "1.5px solid #00E5FF66", zIndex: 99998, pointerEvents: "none", willChange: "transform", top: 0, left: 0, transition: "width 0.2s, height 0.2s" }} />
-    </>
-  );
-}
-
-// ============================================================
-// PARTICLE BACKGROUND
-// ============================================================
-function ParticleBackground() {
-  const canvasRef = useRef(null);
-  const mouseRef = useRef({ x: 0.5, y: 0.5 });
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let w = window.innerWidth, h = window.innerHeight;
-    canvas.width = w; canvas.height = h;
-    const isMobile = w < 768;
-    const COUNT = isMobile ? 40 : 100;
-
-    const particles = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-      r: Math.random() * 1.5 + 0.5, a: Math.random() * 0.5 + 0.1,
-    }));
-
-    const onResize = () => { w = window.innerWidth; h = window.innerHeight; canvas.width = w; canvas.height = h; };
-    const onMouse = (e) => { mouseRef.current = { x: e.clientX / w, y: e.clientY / h }; };
-    window.addEventListener("resize", onResize);
-    window.addEventListener("mousemove", onMouse);
-
-    let raf, t = 0;
-    const draw = () => {
-      ctx.clearRect(0, 0, w, h);
-      t += 0.005;
-      const grad = ctx.createRadialGradient(w * (0.3 + mouseRef.current.x * 0.2), h * 0.3, 0, w * 0.5, h * 0.5, w * 0.8);
-      grad.addColorStop(0, "rgba(124,58,237,0.06)");
-      grad.addColorStop(0.5, "rgba(0,229,255,0.03)");
-      grad.addColorStop(1, "rgba(5,8,22,0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      if (!isMobile) {
-        ctx.strokeStyle = "rgba(0,229,255,0.03)";
-        ctx.lineWidth = 0.5;
-        for (let x = 0; x < w; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
-        for (let y = 0; y < h; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
-      }
-
-      particles.forEach((p, i) => {
-        p.x += p.vx + Math.sin(t + i * 0.1) * 0.1;
-        p.y += p.vy + Math.cos(t + i * 0.07) * 0.1;
-        if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,229,255,${p.a})`; ctx.fill();
-        if (!isMobile) {
-          particles.slice(i + 1, i + 5).forEach(p2 => {
-            const dx = p2.x - p.x, dy = p2.y - p.y, d = Math.sqrt(dx * dx + dy * dy);
-            if (d < 120) {
-              ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y);
-              ctx.strokeStyle = `rgba(0,229,255,${0.06 * (1 - d / 120)})`; ctx.lineWidth = 0.5; ctx.stroke();
-            }
-          });
-        }
-      });
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); window.removeEventListener("mousemove", onMouse); };
-  }, []);
-
-  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }} />;
-}
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-const NAV_ITEMS = [
-  { label: "Core", id: "home" },
-  { label: "Story", id: "story" },
-  { label: "Galaxy", id: "skills" },
-  { label: "Builds", id: "projects" },
-  { label: "Certificates", id: "certificates" }, 
-  { label: "Path", id: "path" },
-  { label: "Uplink", id: "uplink" },
-  { label: "Signal", id: "contact", cta: true },
-];
-
-function Navbar({ activeSection }) {
-  const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const lastScroll = useRef(0);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const s = window.scrollY;
-      setScrolled(s > 60);
-      setHidden(s > lastScroll.current + 10 && s > 200);
-      if (s < lastScroll.current - 10) setHidden(false);
-      lastScroll.current = s;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const navTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    setMobileOpen(false);
-  };
-
-  return (
-    <>
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
-        padding: "0 16px", transition: "all 0.4s ease",
-        transform: hidden ? "translateY(-100%)" : "translateY(0)",
-      }}>
-        <div style={{
-          maxWidth: 1200, margin: "12px auto 0",
-          background: scrolled ? "rgba(5,8,22,0.95)" : "rgba(5,8,22,0.6)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(0,229,255,0.1)",
-          borderRadius: 16, padding: "10px 20px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.4)" : "none",
-          transition: "all 0.4s ease",
-        }}>
-          <button onClick={() => navTo("home")} style={{
-            background: "none", border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 8,
-          }}>
-            <div style={{
-              width: 10, height: 10, borderRadius: "50%",
-              background: "linear-gradient(135deg, #00E5FF, #7C3AED)",
-              boxShadow: "0 0 10px #00E5FF88",
-            }} />
-            <span style={{
-              fontFamily: "'Space Grotesk', sans-serif", fontSize: 16,
-              fontWeight: 700, letterSpacing: "0.08em", color: "#F8FAFC",
-            }}>KVS</span>
+      {/* Domain Filter Pills */}
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+          marginBottom: 32,
+        }}
+      >
+        <button
+          onClick={() => setActiveDomain("all")}
+          style={{
+            background:
+              activeDomain === "all"
+                ? "rgba(104, 176, 198, 0.22)"
+                : "rgba(5, 19, 31, 0.6)",
+            border:
+              activeDomain === "all"
+                ? "1px solid rgba(104, 176, 198, 0.55)"
+                : "1px solid rgba(180, 198, 212, 0.16)",
+            borderRadius: 100,
+            padding: "8px 18px",
+            color: activeDomain === "all" ? "#EEF3F6" : "#9BB0C1",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.1em",
+            cursor: "pointer",
+          }}
+        >
+          ALL SYSTEMS ({SKILLS.length})
+        </button>
+        {SKILL_DOMAINS.map((d) => (
+          <button
+            key={d.id}
+            onClick={() => setActiveDomain(d.id)}
+            style={{
+              background:
+                activeDomain === d.id
+                  ? "rgba(104, 176, 198, 0.22)"
+                  : "rgba(5, 19, 31, 0.6)",
+              border:
+                activeDomain === d.id
+                  ? "1px solid rgba(104, 176, 198, 0.55)"
+                  : "1px solid rgba(180, 198, 212, 0.16)",
+              borderRadius: 100,
+              padding: "8px 18px",
+              color: activeDomain === d.id ? "#EEF3F6" : "#9BB0C1",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              letterSpacing: "0.08em",
+              cursor: "pointer",
+            }}
+          >
+            {d.label.toUpperCase()}
           </button>
+        ))}
+      </div>
 
-          {/* Desktop Nav */}
-          <div className="desktop-nav" style={{ display: "flex", gap: 2, alignItems: "center" }}>
-            {NAV_ITEMS.map(item => (
-              item.cta ? (
-                <button key={item.label} onClick={() => navTo(item.id)} style={{
-                  marginLeft: 12,
-                  background: "linear-gradient(90deg, #00E5FF, #2DD4BF)",
-                  border: "none", borderRadius: 100, padding: "8px 20px",
-                  color: "#050812", fontSize: 13, fontWeight: 700,
-                  cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                  boxShadow: "0 0 16px #00E5FF66",
-                }}>{item.label}</button>
-              ) : (
-                <button key={item.label} onClick={() => navTo(item.id)} style={{
-                  background: activeSection === item.id ? "rgba(0,229,255,0.08)" : "none",
-                  border: "1px solid transparent",
-                  borderRadius: 8, padding: "6px 14px", cursor: "pointer",
-                  color: activeSection === item.id ? "#00E5FF" : "#F8FAFC77",
-                  fontSize: 13, fontFamily: "'Inter', sans-serif",
-                  transition: "all 0.2s",
-                }}>{item.label}</button>
-              )
-            ))}
+      {/* Interactive Pelagic Constellation + Telemetry Inspector */}
+      <div
+        className="abyss-capabilities-grid"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1.35fr) minmax(300px, 0.85fr)",
+          gap: 28,
+          alignItems: "stretch",
+          marginBottom: 44,
+        }}
+      >
+        <div
+          style={{
+            background: "rgba(3, 14, 24, 0.66)",
+            border: "1px solid rgba(180, 198, 212, 0.16)",
+            borderRadius: 20,
+            padding: 24,
+            position: "relative",
+            minHeight: 440,
+            backdropFilter: "blur(12px)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 10.5,
+              color: "#8CA3B5",
+              letterSpacing: "0.14em",
+            }}
+          >
+            <span>SONAR RELATIONAL TOPOLOGY // SELECT NODE TO INSPECT</span>
+            <span>ACTIVE: {selectedSkill.name.toUpperCase()}</span>
           </div>
 
-          {/* Mobile hamburger */}
-          <button onClick={() => setMobileOpen(true)} className="mobile-nav-btn" style={{
-            display: "none", background: "none", border: "1px solid rgba(0,229,255,0.2)",
-            borderRadius: 8, padding: "8px 12px", cursor: "pointer", color: "#00E5FF",
-            fontSize: 18, lineHeight: 1,
-          }}>☰</button>
-        </div>
-      </nav>
+          <div style={{ position: "relative", width: "100%", height: 360, margin: "12px 0" }}>
+            <svg
+              viewBox="0 0 800 360"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                overflow: "visible",
+              }}
+            >
+              <circle
+                cx="400"
+                cy="180"
+                r="95"
+                fill="none"
+                stroke="rgba(180, 198, 212, 0.09)"
+                strokeWidth="1"
+                strokeDasharray="4,4"
+              />
+              <circle
+                cx="400"
+                cy="180"
+                r="160"
+                fill="none"
+                stroke="rgba(180, 198, 212, 0.09)"
+                strokeWidth="1"
+                strokeDasharray="4,4"
+              />
 
-      {/* Mobile Drawer */}
-      {mobileOpen && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 2000,
-          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
-        }} onClick={() => setMobileOpen(false)}>
-          <div style={{
-            position: "absolute", right: 0, top: 0, bottom: 0, width: "min(300px, 80vw)",
-            background: "rgba(5,8,18,0.97)", borderLeft: "1px solid rgba(0,229,255,0.15)",
-            padding: 32, display: "flex", flexDirection: "column", gap: 8,
-          }} onClick={e => e.stopPropagation()}>
-            <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ color: "#00E5FF", fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 18 }}>KVS</span>
-              <button onClick={() => setMobileOpen(false)} style={{ background: "none", border: "none", color: "#F8FAFC88", cursor: "pointer", fontSize: 24 }}>✕</button>
+              {SKILLS.map((s) =>
+                s.connections.map((targetId) => {
+                  const target = SKILLS.find((k) => k.id === targetId);
+                  if (!target || s.id > target.id) return null;
+                  const isHighlighted =
+                    s.id === selectedSkill.id || target.id === selectedSkill.id;
+                  return (
+                    <line
+                      key={`${s.id}-${target.id}`}
+                      x1={s.x * 8}
+                      y1={s.y * 3.6}
+                      x2={target.x * 8}
+                      y2={target.y * 3.6}
+                      stroke={
+                        isHighlighted
+                          ? "rgba(140, 208, 227, 0.82)"
+                          : "rgba(180, 198, 212, 0.14)"
+                      }
+                      strokeWidth={isHighlighted ? "1.8" : "1"}
+                    />
+                  );
+                })
+              )}
+            </svg>
+
+            {SKILLS.map((s) => {
+              const isSelected = s.id === selectedSkill.id;
+              const isConnected = connectedIds.has(s.id);
+              const isFilteredOut =
+                activeDomain !== "all" && s.domain !== activeDomain;
+              const isLearning = s.status === "Active Learning";
+
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setSelectedSkillId(s.id)}
+                  onMouseEnter={() => setSelectedSkillId(s.id)}
+                  style={{
+                    position: "absolute",
+                    left: `${s.x}%`,
+                    top: `${s.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    background: isSelected
+                      ? "rgba(104, 176, 198, 0.30)"
+                      : isConnected
+                      ? "rgba(9, 32, 48, 0.90)"
+                      : "rgba(4, 16, 26, 0.82)",
+                    border: isSelected
+                      ? "1.5px solid #9CE0F2"
+                      : isLearning
+                      ? "1px dashed rgba(217, 167, 106, 0.6)"
+                      : isConnected
+                      ? "1px solid rgba(104, 176, 198, 0.48)"
+                      : "1px solid rgba(180, 198, 212, 0.18)",
+                    borderRadius: 100,
+                    padding: isSelected ? "6px 13px" : "5px 11px",
+                    color: isSelected
+                      ? "#FFFFFF"
+                      : isConnected
+                      ? "#E2EDF3"
+                      : "#9BB0C1",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: isSelected ? 12.5 : 11.5,
+                    fontWeight: isSelected ? 600 : 500,
+                    cursor: "pointer",
+                    opacity: isFilteredOut ? 0.25 : 1,
+                    transition: "all 0.2s ease",
+                    whiteSpace: "nowrap",
+                    zIndex: isSelected ? 10 : isConnected ? 5 : 2,
+                    boxShadow: isSelected
+                      ? "0 0 24px rgba(104, 176, 198, 0.35)"
+                      : "none",
+                  }}
+                >
+                  {s.name}
+                </button>
+              );
+            })}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 10,
+              color: "#8CA3B5",
+            }}
+          >
+            <span>SOLID RING: PRODUCTION / VERIFIED</span>
+            <span style={{ color: "#E6B87C" }}>
+              DASHED RING: ACTIVE LEARNING HORIZON (REACT · FASTAPI)
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Selected Capability Telemetry Card */}
+        <div
+          style={{
+            background: "rgba(4, 17, 29, 0.78)",
+            border: "1px solid rgba(104, 176, 198, 0.28)",
+            borderRadius: 20,
+            padding: "32px 28px",
+            backdropFilter: "blur(14px)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10.5,
+                  letterSpacing: "0.16em",
+                  color:
+                    selectedSkill.status === "Active Learning"
+                      ? "#E6B87C"
+                      : "#8CD0E3",
+                  textTransform: "uppercase",
+                  padding: "4px 10px",
+                  borderRadius: 100,
+                  background:
+                    selectedSkill.status === "Active Learning"
+                      ? "rgba(217, 167, 106, 0.14)"
+                      : "rgba(104, 176, 198, 0.14)",
+                }}
+              >
+                {selectedSkill.status}
+              </span>
+              <span
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 11,
+                  color: "#8CA3B5",
+                }}
+              >
+                NODE // {selectedSkill.id.toUpperCase()}
+              </span>
             </div>
-            {NAV_ITEMS.map(item => (
-              <button key={item.label} onClick={() => navTo(item.id)} style={{
-                background: item.cta ? "linear-gradient(90deg, #00E5FF22, #2DD4BF22)" : "none",
-                border: item.cta ? "1px solid rgba(0,229,255,0.3)" : "none",
-                borderRadius: item.cta ? 8 : 0,
-                cursor: "pointer",
-                color: item.cta ? "#00E5FF" : "#F8FAFC",
-                fontSize: 16, fontFamily: "'Inter'",
-                padding: "12px 0", textAlign: "left",
-                borderBottom: item.cta ? "none" : "1px solid rgba(255,255,255,0.06)",
-                paddingLeft: item.cta ? 16 : 0,
-                fontWeight: item.cta ? 700 : 400,
-              }}>{item.label}</button>
-            ))}
+
+            <h3
+              style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: 38,
+                fontWeight: 600,
+                color: "#F4F8FA",
+                marginBottom: 12,
+              }}
+            >
+              {selectedSkill.name}
+            </h3>
+
+            <p
+              style={{
+                color: "#D6E3EC",
+                fontSize: 14.5,
+                lineHeight: 1.65,
+                marginBottom: 24,
+              }}
+            >
+              {selectedSkill.role}
+            </p>
+
+            {selectedSkill.level != null && (
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, letterSpacing: "0.18em", color: "#8CA3B5" }}>
+                    PROFICIENCY SIGNAL
+                  </span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#8CD0E3" }}>
+                    {selectedSkill.level}%
+                  </span>
+                </div>
+                <div style={{ height: 5, background: "rgba(180, 198, 212, 0.12)", borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${selectedSkill.level}%`, background: "linear-gradient(90deg, #68B0C6, #9CE0F2)", borderRadius: 3, transition: "width 0.5s ease" }} />
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginBottom: 24 }}>
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  color: "#8CA3B5",
+                  marginBottom: 10,
+                }}
+              >
+                VERIFIED APPLICATION & EVIDENCE
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {selectedSkill.usedIn.map((ev) => (
+                  <div
+                    key={ev}
+                    style={{
+                      fontSize: 13,
+                      color: "#EEF3F6",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <span style={{ color: "#8CD0E3" }}>›</span>
+                    <span>{ev}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-    </>
-  );
-}
 
-// ============================================================
-// HERO SECTION
-// ============================================================
-function Hero() {
-  const [text, setText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [loopNum, setLoopNum] = useState(0);
-  const [visible, setVisible] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setTimeout(() => setVisible(true), 100);
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  useEffect(() => {
-    const roles = ["Future Full Stack Developer", "Data Analyst", "AI Engineer"];
-    const typingSpeed = 80;
-    const deletingSpeed = 40;
-    const pauseBeforeDelete = 2500;
-    const pauseBeforeType = 400;
-    const currentRole = roles[loopNum % roles.length];
-    let timer;
-
-    if (isDeleting) {
-      timer = setTimeout(() => {
-        setText(currentRole.substring(0, text.length - 1));
-        if (text.length === 0) { setIsDeleting(false); setLoopNum(prev => prev + 1); }
-      }, deletingSpeed);
-    } else {
-      if (text.length === currentRole.length) {
-        timer = setTimeout(() => setIsDeleting(true), pauseBeforeDelete);
-      } else {
-        timer = setTimeout(() => {
-          setText(currentRole.substring(0, text.length + 1));
-        }, text.length === 0 ? pauseBeforeType : typingSpeed);
-      }
-    }
-    return () => clearTimeout(timer);
-  }, [text, isDeleting, loopNum]);
-
-  return (
-    <section id="home" style={{
-      minHeight: "100vh", display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      padding: isMobile ? "100px 20px 60px" : "80px 24px 40px",
-      position: "relative", overflow: "hidden", textAlign: "center",
-    }}>
-      {/* Binary decorations - hidden on mobile */}
-      {!isMobile && (
-        <>
-          <div style={{ position: "absolute", top: 0, left: "15%", opacity: 0.03, color: "white", fontSize: 10, writingMode: "vertical-rl", whiteSpace: "nowrap" }}>
-            01101001 01101110 01110100 01100101 01101100
+          <div
+            style={{
+              borderTop: "1px solid rgba(180, 198, 212, 0.14)",
+              paddingTop: 18,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                color: "#8CA3B5",
+                marginBottom: 10,
+              }}
+            >
+              INTERLOCKS WITH ({selectedSkill.connections.length} NODES)
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {selectedSkill.connections.map((cid) => {
+                const conn = SKILLS.find((k) => k.id === cid);
+                if (!conn) return null;
+                return (
+                  <button
+                    key={cid}
+                    onClick={() => setSelectedSkillId(cid)}
+                    style={{
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid rgba(180, 198, 212, 0.2)",
+                      borderRadius: 6,
+                      padding: "5px 10px",
+                      color: "#D6E3EC",
+                      fontSize: 12,
+                      fontFamily: "'JetBrains Mono', monospace",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {conn.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <div style={{ position: "absolute", top: "20%", right: "15%", opacity: 0.03, color: "white", fontSize: 10, writingMode: "vertical-rl", whiteSpace: "nowrap" }}>
-            10110011 00101011 11001010 01101100
-          </div>
-        </>
-      )}
-
-      {/* 3D Gyroscope Rings - scaled for mobile */}
-      <div style={{
-        position: "absolute", top: "45%", left: "50%",
-        transform: "translate(-50%, -50%)", width: "100%", height: "100%",
-        pointerEvents: "none", zIndex: 0,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        perspective: "1200px", transformStyle: "preserve-3d",
-      }}>
-        <div className="animated-ring" style={{
-          width: isMobile ? "340px" : "750px", height: isMobile ? "340px" : "750px",
-          borderColor: "rgba(253, 224, 71, 0.05)",
-          borderTopColor: "rgba(253, 224, 71, 0.4)",
-          borderBottomColor: "rgba(253, 224, 71, 0.1)",
-          animation: "tumble-x 25s linear infinite",
-        }} />
-        <div className="animated-ring" style={{
-          width: isMobile ? "250px" : "550px", height: isMobile ? "250px" : "550px",
-          borderColor: "rgba(125, 211, 252, 0.08)",
-          borderLeftColor: "rgba(125, 211, 252, 0.5)",
-          animation: "tumble-y 20s linear infinite",
-        }} />
-        <div className="animated-ring" style={{
-          width: isMobile ? "160px" : "350px", height: isMobile ? "160px" : "350px",
-          borderColor: "rgba(167, 139, 250, 0.1)",
-          borderRightColor: "rgba(167, 139, 250, 0.6)",
-          animation: "tumble-reverse 15s linear infinite",
-        }} />
-        <div style={{
-          position: "absolute", width: isMobile ? "240px" : "500px", height: isMobile ? "240px" : "500px",
-          background: "radial-gradient(circle, #050816 40%, transparent 70%)",
-          borderRadius: "50%", zIndex: 4,
-        }} />
-        {/* Orbiting tech tags - only on desktop */}
-        {!isMobile && (
-          <div style={{ position: "absolute", top: "50%", left: "50%", width: 0, height: 0, transformStyle: "preserve-3d" }}>
-            <div className="orbit-tag" style={{ "--r": "380px", "--dur": "35s", "--delay": "0s" }}>SQL</div>
-            <div className="orbit-tag" style={{ "--r": "380px", "--dur": "35s", "--delay": "-17.5s" }}>Pandas</div>
-            <div className="orbit-tag" style={{ "--r": "280px", "--dur": "25s", "--delay": "-5s" }}>React</div>
-            <div className="orbit-tag" style={{ "--r": "280px", "--dur": "25s", "--delay": "-17s" }}>FastAPI</div>
-            <div className="orbit-tag" style={{ "--r": "180px", "--dur": "15s", "--delay": "-2s" }}>Python</div>
-            <div className="orbit-tag" style={{ "--r": "180px", "--dur": "15s", "--delay": "-9.5s" }}>AI</div>
-          </div>
-        )}
-      </div>
-
-      {/* Foreground content */}
-      <div style={{
-        maxWidth: 900, width: "100%", zIndex: 20,
-        opacity: visible ? 1 : 0,
-        transform: visible ? "none" : "translateY(30px)",
-        transition: "all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)",
-        display: "flex", flexDirection: "column", alignItems: "center",
-        marginTop: isMobile ? "0px" : "-40px",
-      }}>
-        <div style={{
-          border: "1px solid rgba(45,212,191,0.3)", borderRadius: "100px",
-          padding: "4px 16px", color: "#2DD4BF", fontSize: "11px",
-          letterSpacing: "0.15em", marginBottom: "20px",
-          display: "flex", alignItems: "center", gap: "8px",
-          background: "rgba(45,212,191,0.05)",
-        }}>
-          <div style={{ width: 6, height: 6, background: "#2DD4BF", borderRadius: "50%" }} />
-          SYSTEM ONLINE
-        </div>
-
-        <p style={{ color: "#94A3B8", fontSize: isMobile ? "16px" : "18px", marginBottom: "8px", fontFamily: "'Space Grotesk', sans-serif" }}>
-          Hello,
-        </p>
-
-        <div style={{ display: "flex", alignItems: "baseline", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
-          <span style={{ fontSize: "clamp(40px, 10vw, 85px)", color: "#FFFFFF", fontWeight: 600, fontFamily: "'Space Grotesk', sans-serif" }}>I'm</span>
-          <span style={{ fontSize: "clamp(40px, 10vw, 85px)", color: "#7DD3FC", fontWeight: 600, fontFamily: "'Space Grotesk', sans-serif" }}>Karanveer</span>
-        </div>
-
-        <h1 style={{
-          fontSize: "clamp(48px, 12vw, 100px)", fontWeight: 600,
-          letterSpacing: "-0.01em", lineHeight: 1.1,
-          fontFamily: "'Space Grotesk', sans-serif",
-          color: "#A78BFA", marginTop: "-10px", marginBottom: "24px",
-        }}>Singh</h1>
-
-        <div style={{
-          fontSize: isMobile ? "15px" : "clamp(18px, 2.5vw, 24px)", color: "#CBD5E1",
-          fontFamily: "'JetBrains Mono', monospace", marginBottom: 32,
-          display: "flex", alignItems: "center",
-          minHeight: "36px", letterSpacing: "1px",
-          flexWrap: "wrap", justifyContent: "center", gap: "4px",
-        }}>
-          {text}
-          <span style={{
-            animation: "blink 1s step-end infinite",
-            display: "inline-block", width: "2px", height: "26px",
-            background: "#2DD4BF", marginLeft: "2px",
-          }} />
-        </div>
-
-        <p style={{
-          color: "#94A3B8", fontSize: isMobile ? "14px" : "16px", maxWidth: 650,
-          lineHeight: 1.6, marginBottom: 48, fontFamily: "'Inter', sans-serif",
-          padding: isMobile ? "0 4px" : "0",
-        }}>
-          I build data systems and interfaces that behave like intelligent products — analytics, models and motion in one coherent surface.
-        </p>
-
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", padding: "0 16px" }}>
-          <a href="#projects" style={{
-            background: "linear-gradient(90deg, #2DD4BF 0%, #A78BFA 100%)",
-            border: "none", borderRadius: 100, padding: isMobile ? "12px 24px" : "14px 32px",
-            color: "#050812", fontSize: isMobile ? "13px" : "15px", fontWeight: 600, cursor: "pointer",
-            fontFamily: "'Inter', sans-serif", textDecoration: "none", whiteSpace: "nowrap",
-          }}>Explore Portfolio</a>
-          <a href="/resume.pdf" style={{
-            background: "rgba(15,23,42,0.6)",
-            border: "1px solid rgba(255,255,255,0.15)", borderRadius: 100,
-            padding: isMobile ? "12px 24px" : "14px 32px",
-            color: "#E2E8F0", fontSize: isMobile ? "13px" : "15px", fontWeight: 500, cursor: "pointer",
-            fontFamily: "'Inter', sans-serif", textDecoration: "none", whiteSpace: "nowrap",
-          }}>Download Resume</a>
-          <a href="#contact" style={{
-            background: "transparent",
-            border: "1px solid rgba(255,255,255,0.08)", borderRadius: 100,
-            padding: isMobile ? "12px 24px" : "14px 32px",
-            color: "#E2E8F0", fontSize: isMobile ? "13px" : "15px", fontWeight: 500, cursor: "pointer",
-            fontFamily: "'Inter', sans-serif", textDecoration: "none", whiteSpace: "nowrap",
-          }}>Contact Me</a>
         </div>
       </div>
 
-      <style>{`
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        .animated-ring {
-          position: absolute; border-radius: 50%; border-width: 4px; border-style: solid; transform-style: preserve-3d;
-        }
-        @keyframes tumble-x {
-          0% { transform: rotateX(0deg) rotateY(15deg) rotateZ(0deg); }
-          100% { transform: rotateX(360deg) rotateY(15deg) rotateZ(180deg); }
-        }
-        @keyframes tumble-y {
-          0% { transform: rotateX(15deg) rotateY(0deg) rotateZ(0deg); }
-          100% { transform: rotateX(15deg) rotateY(360deg) rotateZ(180deg); }
-        }
-        @keyframes tumble-reverse {
-          0% { transform: rotateX(360deg) rotateY(360deg) rotateZ(0deg); }
-          100% { transform: rotateX(0deg) rotateY(0deg) rotateZ(180deg); }
-        }
-        .orbit-tag {
-          position: absolute; background: rgba(15,23,42,0.8);
-          border: 1px solid rgba(255,255,255,0.1); padding: 6px 16px;
-          border-radius: 100px; font-size: 12px; color: #94A3B8;
-          font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
-          white-space: nowrap; animation: orbit-float var(--dur) linear infinite;
-          animation-delay: var(--delay);
-        }
-        @keyframes orbit-float {
-          0%   { transform: rotate(0deg)   translateX(var(--r)) rotate(0deg)   translate(-50%,-50%) scale(1);    z-index: 5; }
-          25%  { transform: rotate(90deg)  translateX(var(--r)) rotate(-90deg)  translate(-50%,-50%) scale(1.15); z-index: 5; }
-          49.9%{ z-index: 5; }
-          50%  { transform: rotate(180deg) translateX(var(--r)) rotate(-180deg) translate(-50%,-50%) scale(0.9);  z-index: 3; }
-          75%  { transform: rotate(270deg) translateX(var(--r)) rotate(-270deg) translate(-50%,-50%) scale(0.85); z-index: 3; }
-          99.9%{ z-index: 3; }
-          100% { transform: rotate(360deg) translateX(var(--r)) rotate(-360deg) translate(-50%,-50%) scale(1);    z-index: 5; }
-        }
-      `}</style>
+      {/* Structured 4-Stratum Capability Matrix */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
+          gap: 18,
+        }}
+      >
+        {SKILL_DOMAINS.map((domain) => {
+          const domainSkills = SKILLS.filter((s) => s.domain === domain.id);
+          return (
+            <div
+              key={domain.id}
+              style={{
+                background: "rgba(3, 14, 24, 0.58)",
+                border: "1px solid rgba(180, 198, 212, 0.14)",
+                borderRadius: 16,
+                padding: "24px 22px",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  color: "#8CD0E3",
+                  marginBottom: 6,
+                }}
+              >
+                DEPTH {domain.depthRange}
+              </div>
+              <h3
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 17,
+                  fontWeight: 600,
+                  color: "#EEF3F6",
+                  marginBottom: 8,
+                }}
+              >
+                {domain.label}
+              </h3>
+              <p
+                style={{
+                  color: "#9BB0C1",
+                  fontSize: 13,
+                  lineHeight: 1.55,
+                  marginBottom: 16,
+                }}
+              >
+                {domain.summary}
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {domainSkills.map((sk) => (
+                  <button
+                    key={sk.id}
+                    onClick={() => setSelectedSkillId(sk.id)}
+                    style={{
+                      background:
+                        selectedSkillId === sk.id
+                          ? "rgba(104, 176, 198, 0.24)"
+                          : "rgba(255, 255, 255, 0.04)",
+                      border:
+                        selectedSkillId === sk.id
+                          ? "1px solid #8CD0E3"
+                          : "1px solid rgba(180, 198, 212, 0.16)",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                      color: "#E2EDF3",
+                      fontSize: 12,
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {sk.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }
 
-// ============================================================
-// SECTION WRAPPER
-// ============================================================
-function Section({ id, children, style = {} }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.08 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
+// ============================================================================
+// ARCHITECTURAL TELEMETRY DIAGRAM (Honest SVG Diagram when local PNG is absent)
+// ============================================================================
+export function ProjectSchematicFallback({ project }) {
+  const isBrainBlitz = project.id === "brainblitz";
   return (
-    <section id={id} ref={ref} style={{
-      padding: "80px 20px",
-      opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(40px)",
-      transition: "all 0.8s ease", ...style,
-    }}>
-      {children}
-    </section>
-  );
-}
-
-function SectionMeta({ index, label }) {
-  return (
-    <div style={{ color: "#00E5FF", fontSize: 12, letterSpacing: "0.2em", marginBottom: 16, fontFamily: "'JetBrains Mono'" }}>
-      {index} — {label}
-    </div>
-  );
-}
-
-function SectionHeading({ children }) {
-  return (
-    <h2 style={{
-      fontSize: "clamp(28px, 6vw, 60px)", fontWeight: 800,
-      fontFamily: "'Space Grotesk'", letterSpacing: "-0.02em",
-      color: "#F8FAFC", lineHeight: 1.1, marginBottom: 16,
-    }}>{children}</h2>
-  );
-}
-
-function SectionSub({ children }) {
-  return (
-    <p style={{ color: "#64748B", fontSize: 15, marginBottom: 48, lineHeight: 1.6 }}>{children}</p>
-  );
-}
-
-// ============================================================
-// STORY SECTION — Mobile-first milestone cards
-// ============================================================
-function StorySection() {
-  const containerRef = useRef(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const progress = (window.innerHeight / 1.5 - rect.top) / rect.height;
-      setScrollProgress(Math.max(0, Math.min(1, progress)));
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  return (
-    <div id="story" ref={containerRef} style={{ padding: "80px 20px", maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-      <SectionMeta index="02" label="STORY" />
-      <SectionHeading>A path built from curiosity,<br />not checklists.</SectionHeading>
-      <SectionSub>Every milestone below unlocked a new way of thinking about data, products and people.</SectionSub>
-
-      {isMobile ? (
-        /* Mobile: single column with left timeline */
-        <div style={{ position: "relative" }}>
-          <div style={{
-            position: "absolute", left: 10, top: 0, bottom: 0,
-            width: 3, background: "rgba(0,229,255,0.1)", borderRadius: 2, overflow: "hidden",
-          }}>
-            <div style={{
-              width: "100%", height: `${scrollProgress * 100}%`,
-              background: "linear-gradient(180deg, transparent, #00E5FF, #00FFC6)",
-              transition: "height 0.15s ease-out",
-            }} />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingLeft: 36 }}>
-            {MILESTONES.map((m, i) => (
-              <MilestoneCardMobile key={i} item={m} index={i} />
-            ))}
-          </div>
-        </div>
-      ) : (
-        /* Desktop: alternating left-right */
-        <div style={{ position: "relative" }}>
-          <div style={{
-            position: "absolute", left: "50%", top: 0, bottom: 0,
-            width: 3, background: "rgba(0,229,255,0.1)",
-            transform: "translateX(-50%)", borderRadius: 2, overflow: "hidden",
-          }}>
-            <div style={{
-              width: "100%", height: `${scrollProgress * 100}%`,
-              background: "linear-gradient(180deg, transparent, #00E5FF, #00FFC6)",
-              transition: "height 0.15s ease-out",
-            }} />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
-            {MILESTONES.map((m, i) => (
-              <MilestoneCard key={i} item={m} index={i} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MilestoneCardMobile({ item, index }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.2 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-  return (
-    <div ref={ref} style={{
-      position: "relative",
-      opacity: visible ? 1 : 0,
-      transform: visible ? "none" : "translateX(-20px)",
-      transition: `all 0.6s ease ${index * 0.08}s`,
-    }}>
-      {/* Dot */}
-      <div style={{
-        position: "absolute", left: -30, top: 20,
-        width: 14, height: 14, borderRadius: "50%",
-        background: "#050812", border: "2px solid #2DD4BF",
-        boxShadow: "0 0 10px #2DD4BF88", zIndex: 2,
-      }}>
-        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#2DD4BF", margin: "2px" }} />
+    <div
+      style={{
+        padding: "20px 22px",
+        background:
+          "linear-gradient(145deg, rgba(6, 24, 38, 0.94) 0%, rgba(2, 9, 16, 0.98) 100%)",
+        minHeight: 235,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          alignItems: "center",
+          rowGap: 4,
+          columnGap: 10,
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 9.5,
+          letterSpacing: "0.16em",
+          color: "#8CD0E3",
+          borderBottom: "1px solid rgba(180, 198, 212, 0.12)",
+          paddingBottom: 10,
+        }}
+      >
+        <span>SYSTEM ARCHITECTURE DIAGRAM // {project.title.toUpperCase()}</span>
+        <span style={{ color: "#E6B87C" }}>ILLUSTRATIVE SCHEMATIC</span>
       </div>
-      <div style={{
-        background: "rgba(15,23,42,0.7)", backdropFilter: "blur(12px)",
-        border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14,
-        padding: "20px 20px",
-        boxShadow: "0 4px 30px rgba(0,0,0,0.3)",
-      }}>
-        <div style={{ color: "#00E5FF", fontSize: 11, letterSpacing: "0.15em", fontFamily: "'JetBrains Mono'", marginBottom: 8 }}>
-          {item.year}
-        </div>
-        <div style={{ fontSize: 17, fontWeight: 700, fontFamily: "'Space Grotesk'", color: "#F8FAFC", marginBottom: 8 }}>
-          {item.title}
-        </div>
-        <div style={{ color: "#64748B", fontSize: 13, lineHeight: 1.65 }}>{item.desc}</div>
+
+      <div
+        className="abyss-arch-grid"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 10,
+          margin: "16px 0",
+        }}
+      >
+        {project.architecture.map((st, i) => (
+          <div
+            key={st.stage}
+            style={{
+              background:
+                i === project.architecture.length - 1
+                  ? "rgba(217, 167, 106, 0.12)"
+                  : "rgba(104, 176, 198, 0.09)",
+              border:
+                i === project.architecture.length - 1
+                  ? "1px solid rgba(230, 184, 124, 0.45)"
+                  : "1px solid rgba(140, 208, 227, 0.3)",
+              borderRadius: 10,
+              padding: "14px 10px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: 6,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 9.5,
+                color: i === project.architecture.length - 1 ? "#E6B87C" : "#8CD0E3",
+                letterSpacing: "0.12em",
+              }}
+            >
+              0{i + 1}
+            </div>
+            <div
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 11.5,
+                fontWeight: 600,
+                color: "#F4F8FA",
+                lineHeight: 1.3,
+              }}
+            >
+              {st.name}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10,
+          color: "#9BB0C1",
+        }}
+      >
+        <span>LOCAL SCREENSHOT PATH: {project.image}</span>
+        <span style={{ color: "#8CD0E3" }}>DEPLOYED ON STREAMLIT CLOUD</span>
       </div>
     </div>
   );
 }
 
-function MilestoneCard({ item, index }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  const isLeft = index % 2 === 0;
+// ============================================================================
+// ZONE C — THE RESEARCH VESSEL (DEPLOYED PROJECTS SHOWCASE) - WIDE & ANIMATED
+// ============================================================================
+export function ResearchVesselProjects() {
+  const [revealRef, revealStyle] = useReveal();
 
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.3 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} style={{
-      display: "grid", gridTemplateColumns: "1fr 40px 1fr", gap: 0, alignItems: "center",
-      opacity: visible ? 1 : 0,
-      transform: visible ? "none" : `translateX(${isLeft ? "-30px" : "30px"})`,
-      transition: `all 0.7s ease ${index * 0.1}s`,
-    }}>
-      <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 32 }}>
-        {isLeft ? (
-          <div style={{
-            background: "rgba(15,23,42,0.7)", backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
-            padding: "28px 32px", maxWidth: 380, textAlign: "right",
-            boxShadow: "0 4px 40px rgba(0,0,0,0.3)",
-          }}>
-            <div style={{ color: "#00E5FF", fontSize: 11, letterSpacing: "0.15em", fontFamily: "'JetBrains Mono'", marginBottom: 10 }}>{item.year}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "'Space Grotesk'", color: "#F8FAFC", marginBottom: 10 }}>{item.title}</div>
-            <div style={{ color: "#64748B", fontSize: 14, lineHeight: 1.65 }}>{item.desc}</div>
-          </div>
-        ) : null}
-      </div>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-        <div style={{
-          width: 16, height: 16, borderRadius: "50%",
-          background: "#050812", border: "2px solid #2DD4BF",
-          boxShadow: "0 0 14px #2DD4BF88", zIndex: 2, flexShrink: 0,
-        }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#2DD4BF", margin: "3px" }} />
-        </div>
-      </div>
-      <div style={{ paddingLeft: 32 }}>
-        {!isLeft ? (
-          <div style={{
-            background: "rgba(15,23,42,0.7)", backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
-            padding: "28px 32px", maxWidth: 380,
-            boxShadow: "0 4px 40px rgba(0,0,0,0.3)",
-          }}>
-            <div style={{ color: "#00E5FF", fontSize: 11, letterSpacing: "0.15em", fontFamily: "'JetBrains Mono'", marginBottom: 10 }}>{item.year}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "'Space Grotesk'", color: "#F8FAFC", marginBottom: 10 }}>{item.title}</div>
-            <div style={{ color: "#64748B", fontSize: 14, lineHeight: 1.65 }}>{item.desc}</div>
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-// ============================================================
-// SKILL GALAXY — dynamic scaling for mobile responsiveness
-// ============================================================
-function SkillGalaxy() {
-  const canvasRef = useRef(null);
-  const containerRef = useRef(null);
-  const [hovered, setHovered] = useState(null);
-  const mouseRef = useRef({ x: -1000, y: -1000 });
-  const currentPositionsRef = useRef([]);
-  const [isMobile, setIsMobile] = useState(false);
-
-  const activeSkills = useMemo(() => SKILLS.filter(s => s.name !== "Docker" && s.name !== "Power BI"), []);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  // Shrink the internal canvas grid on mobile so elements aren't scaled down as heavily
-  const SIZE = isMobile ? 1000 : 1400;
-
-  const basePositions = useMemo(() => {
-    const cx = SIZE / 2, cy = SIZE / 2;
-    const total = activeSkills.length;
-    return activeSkills.map((skill, i) => {
-      let layer, angle, radius;
-      if (i === 0) { layer = 0; radius = 0; angle = 0; }
-      // Pull the orbits slightly tighter on mobile to fit the smaller grid
-      else if (i < 5) { layer = 1; radius = isMobile ? 220 : 300; angle = ((i - 1) / 4) * Math.PI * 2 - Math.PI / 2; }
-      else { layer = 2; radius = isMobile ? 420 : 590; const rem = total - 5; angle = ((i - 5) / rem) * Math.PI * 2 - Math.PI / 2; }
-      return { cx, cy, baseAngle: angle, radius, layer, skill };
-    });
-  }, [activeSkills, isMobile, SIZE]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    canvas.width = SIZE; canvas.height = SIZE;
-    let raf, t = 0;
-    const hoveredRef = { current: null };
-    const isMob = window.innerWidth < 768; // Capture directly for the drawing loop
-
-    const getEventPos = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const scale = SIZE / rect.width;
-      if (e.touches) {
-        return {
-          x: (e.touches[0].clientX - rect.left) * scale,
-          y: (e.touches[0].clientY - rect.top) * scale,
-        };
-      }
-      return {
-        x: (e.clientX - rect.left) * scale,
-        y: (e.clientY - rect.top) * scale,
-      };
-    };
-
-    const findNode = (pos) => {
-      let found = null;
-      // Expand the touch target area for mobile users
-      const hitRadius = isMob ? 60 : 40; 
-      currentPositionsRef.current.forEach((p, i) => {
-        const dx = pos.x - p.x, dy = pos.y - p.y;
-        if (Math.sqrt(dx * dx + dy * dy) < hitRadius) found = i;
-      });
-      return found;
-    };
-
-    const onMouseMove = (e) => {
-      const pos = getEventPos(e);
-      mouseRef.current = pos;
-      const found = findNode(pos);
-      hoveredRef.current = found; setHovered(found);
-    };
-
-    const onTouchStart = (e) => {
-      const pos = getEventPos(e);
-      mouseRef.current = pos;
-      const found = findNode(pos);
-      // Only prevent default scrolling if the user is actually tapping a node
-      if (found !== null) {
-        e.preventDefault();
-        hoveredRef.current = found; setHovered(found);
-      }
-    };
-
-    const onTouchEnd = () => {
-      setTimeout(() => { hoveredRef.current = null; setHovered(null); }, 2500);
-    };
-
-    canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
-    canvas.addEventListener("touchend", onTouchEnd);
-
-    const draw = () => {
-      ctx.clearRect(0, 0, SIZE, SIZE);
-      t += 0.002;
-      const h = hoveredRef.current;
-      const connectedSet = h !== null
-        ? new Set(activeSkills[h].connections.map(c => activeSkills.findIndex(s => s.id === c)))
-        : new Set();
-
-      currentPositionsRef.current = basePositions.map((p, i) => {
-        const orbitSpeed = p.layer === 1 ? 0.4 : -0.2;
-        const floatX = Math.cos(t * 5 + p.baseAngle * 3) * 10;
-        const floatY = Math.sin(t * 5 + p.baseAngle * 3) * 10;
-        return {
-          ...p,
-          x: p.radius === 0 ? p.cx : p.cx + Math.cos(p.baseAngle + t * orbitSpeed) * p.radius + floatX,
-          y: p.radius === 0 ? p.cy : p.cy + Math.sin(p.baseAngle + t * orbitSpeed) * p.radius + floatY,
-        };
-      });
-
-      const currentPos = currentPositionsRef.current;
-      const drawnLines = new Set();
-      
-      activeSkills.forEach((skill, i) => {
-        skill.connections.forEach(connId => {
-          const j = activeSkills.findIndex(s => s.id === connId);
-          if (j < 0) return;
-          const pairKey = i < j ? `${i}-${j}` : `${j}-${i}`;
-          if (drawnLines.has(pairKey)) return;
-          drawnLines.add(pairKey);
-          const a = currentPos[i], b = currentPos[j];
-          const isActive = h !== null && (i === h || connectedSet.has(i) || j === h || connectedSet.has(j));
-          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = isActive ? "rgba(0,229,255,0.7)" : "rgba(0,229,255,0.12)";
-          // Make connection lines thicker on mobile
-          ctx.lineWidth = isActive ? (isMob ? 4 : 2.5) : (isMob ? 1.5 : 0.8); 
-          ctx.stroke();
-        });
-      });
-
-      activeSkills.forEach((skill, i) => {
-        const pos = currentPos[i];
-        const isHovered = i === h, isConnected = connectedSet.has(i);
-        
-        // Dynamically boost node sizes on mobile
-        const baseR = isMob ? 38 : 24;
-        const connR = isMob ? 52 : 36;
-        const hovR = isMob ? 64 : 48;
-        const r = isHovered ? hovR : isConnected ? connR : baseR;
-        
-        const alpha = h === null ? 0.9 : (isHovered || isConnected ? 1 : 0.2);
-        const colors = { core: "#00E5FF", frontend: "#7C3AED", backend: "#00FFC6", data: "#F59E0B", tools: "#EC4899", ai: "#10B981", learning: "#6366F1" };
-        const color = colors[skill.category] || "#00E5FF";
-
-        if (isHovered || isConnected || h === null) {
-          const glowSize = (isHovered || isConnected) ? r * 2.8 : r * 1.8;
-          const glow = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, glowSize);
-          glow.addColorStop(0, color + (isHovered ? "99" : "44")); glow.addColorStop(1, "transparent");
-          ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(pos.x, pos.y, glowSize, 0, Math.PI * 2); ctx.fill();
-        }
-
-        ctx.beginPath(); ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.globalAlpha = alpha; ctx.fill(); ctx.globalAlpha = 1;
-
-        // Dynamically boost font sizes and push the text down a bit further on mobile
-        const fontBase = isMob ? 28 : 17;
-        const fontHov = isMob ? 34 : 22;
-        const fontSize = isHovered ? fontHov : fontBase;
-        
-        ctx.font = `${isHovered ? 700 : 500} ${fontSize}px 'Inter', sans-serif`;
-        ctx.fillStyle = isHovered ? "#FFFFFF" : isConnected ? "#F8FAFCee" : "#F8FAFC88";
-        ctx.textAlign = "center";
-        ctx.fillText(skill.name, pos.x, pos.y + r + (isMob ? 36 : 26));
-      });
-
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-    return () => {
-      cancelAnimationFrame(raf);
-      canvas.removeEventListener("mousemove", onMouseMove);
-      canvas.removeEventListener("touchstart", onTouchStart);
-      canvas.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [basePositions, activeSkills, SIZE]);
-
-  const hoveredSkill = hovered !== null ? activeSkills[hovered] : null;
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, alignItems: "center", padding: "20px 0" }}>
-      <div ref={containerRef} style={{ width: "100%", position: "relative" }}>
-        <canvas
-          ref={canvasRef}
+  // Helper function to render individual project cards cleanly
+  const renderProjectCard = (project) => (
+    <article
+      className="project-card-wrapper"
+      style={{
+        background: "rgba(8, 16, 28, 0.85)",
+        border: "1px solid rgba(180, 198, 212, 0.12)",
+        borderRadius: 20,
+        overflow: "hidden",
+        backdropFilter: "blur(16px)",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 15px 40px rgba(0, 0, 0, 0.4)",
+        transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+        width: "100%", 
+        position: "relative",
+        zIndex: 2, // Ensure cards stay above the new background layer
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-8px)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
+    >
+      <div
+        style={{
+          width: "100%",
+          height: 220,
+          background: "#020810",
+          position: "relative",
+          borderBottom: "1px solid rgba(180, 198, 212, 0.1)",
+        }}
+      >
+        <img
+          src={project.image}
+          alt={`${project.title} interface`}
           style={{
             width: "100%",
-            height: "auto",
-            display: "block",
-            cursor: hovered !== null ? "pointer" : "crosshair",
-            filter: "drop-shadow(0 0 30px rgba(0,229,255,0.12))",
-            touchAction: "pan-y", // Allows vertical scrolling on mobile when touching the canvas
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "top",
           }}
         />
       </div>
-      <div style={{ width: "100%", maxWidth: 540 }}>
-        {hoveredSkill ? (
-          <div style={{
-            background: "rgba(15,23,42,0.75)", backdropFilter: "blur(16px)",
-            border: "1px solid rgba(0,229,255,0.35)", borderRadius: 18, padding: "24px 28px",
-            animation: "fadeIn 0.2s ease",
-          }}>
-            <div style={{ color: "#00E5FF", fontSize: 22, fontWeight: 700, marginBottom: 10, fontFamily: "'Space Grotesk'" }}>{hoveredSkill.name}</div>
-            <div style={{ display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap" }}>
-              {hoveredSkill.connections.map(c => {
-                const sk = activeSkills.find(s => s.id === c);
-                return sk ? <span key={c} style={{ background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.4)", borderRadius: 6, padding: "5px 12px", fontSize: 13, color: "#E9D5FF" }}>{sk.name}</span> : null;
-              })}
-            </div>
-            <div style={{ height: 7, background: "rgba(255,255,255,0.1)", borderRadius: 4, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${hoveredSkill.level}%`, background: "linear-gradient(90deg, #7C3AED, #00E5FF)", borderRadius: 4 }} />
-            </div>
-            <div style={{ color: "#94A3B8", fontSize: 13, marginTop: 10 }}>Proficiency: {hoveredSkill.level}%</div>
-          </div>
-        ) : (
-          <div style={{
-            color: "#64748B", fontSize: 14, fontFamily: "'JetBrains Mono'",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
-            padding: "20px 24px", border: "1px dashed rgba(255,255,255,0.1)", borderRadius: 16,
-            textAlign: "center",
-          }}>
-            {isMobile ? "Tap a node to explore connections" : "Hover a node to explore connections"}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
-function GalaxySection() {
-  return (
-    <div id="skills" style={{ padding: "80px 20px", maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-      <SectionMeta index="03" label="GALAXY" />
-      <SectionHeading>Skill Galaxy</SectionHeading>
-      <SectionSub>Hover over a skill node to explore its connections and see how the technologies relate.</SectionSub>
-      <SkillGalaxy />
-    </div>
-  );
-}
-
-// ============================================================
-// PROJECT CARD + MODAL — with anime border-beam stroke animation
-// ============================================================
-function ProjectCard({ project, onOpen }) {
-  const [hovered, setHovered] = useState(false);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [svgDims, setSvgDims] = useState({ w: 0, h: 0 });
-  const cardRef  = useRef(null);
-  const beamRef  = useRef(null);   // the animated SVG <rect>
-  const animRef  = useRef(null);   // RAF handle
-  const offsetRef = useRef(0);     // current beam offset (mutable, no re-render)
-  const dimsRef   = useRef({ w: 0, h: 0 }); // latest dims (mutable)
-
-  const onMouseMove = (e) => {
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left - rect.width / 2) / rect.width * 20;
-    const y = -(e.clientY - rect.top - rect.height / 2) / rect.height * 20;
-    setTilt({ x, y });
-  };
-
-  const handleLinkClick = (e, url) => {
-    if (!url || url === "#") return;
-    e.stopPropagation();
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
-  // Track card dimensions via ResizeObserver (no scroll/resize listener needed)
-  useEffect(() => {
-    if (!cardRef.current) return;
-    const ro = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect;
-      dimsRef.current = { w: width, h: height };
-      setSvgDims({ w: width, h: height });
-    });
-    ro.observe(cardRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  // Stable RAF loop — reads dimsRef so it never needs to restart
-  useEffect(() => {
-    const BORDER_RADIUS = 19;
-    const BEAM_LEN = 110;  // visible stroke segment in px
-
-    const animate = () => {
-      const { w, h } = dimsRef.current;
-      if (w > 0 && h > 0 && beamRef.current) {
-        // Rounded-rect perimeter  ≈  2(w-2 + h-2) – (8 – 2π)·r
-        const perim = 2 * (w - 2 + h - 2) - (8 - 2 * Math.PI) * BORDER_RADIUS;
-        const gap   = Math.max(1, perim - BEAM_LEN);
-        // ~3-second lap: perim px / (60 fps × 3 s)
-        const speed = perim / 180;
-
-        offsetRef.current = (offsetRef.current + speed) % perim;
-        beamRef.current.setAttribute("stroke-dasharray",  `${BEAM_LEN} ${gap}`);
-        beamRef.current.setAttribute("stroke-dashoffset", String(-offsetRef.current));
-      }
-      animRef.current = requestAnimationFrame(animate);
-    };
-
-    animRef.current = requestAnimationFrame(animate);
-    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-  }, []); // runs once — stable loop
-
-  const filterId = `beam-glow-${project.id}`;
-
-  return (
-    <div
-      ref={cardRef}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setTilt({ x: 0, y: 0 }); }}
-      onMouseMove={onMouseMove}
-      onClick={() => onOpen(project)}
-      style={{
-        background: "rgba(8,12,28,0.92)",
-        border: `1px solid ${hovered ? project.color + "60" : "rgba(255,255,255,0.07)"}`,
-        borderRadius: 20, cursor: "pointer",
-        transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) scale(${hovered ? 1.02 : 1})`,
-        transition: "border-color 0.3s, transform 0.1s, box-shadow 0.3s",
-        boxShadow: hovered
-          ? `0 24px 64px rgba(0,0,0,0.55), 0 0 48px ${project.color}28`
-          : "0 4px 24px rgba(0,0,0,0.3)",
-        position: "relative", overflow: "hidden",
-        display: "flex", flexDirection: "column",
-      }}
-    >
-
-      {/* ── Anime border-beam SVG overlay (sits on top of everything) ── */}
-      {svgDims.w > 0 && svgDims.h > 0 && (
-        <svg
-          aria-hidden="true"
+      <div
+        style={{
+          padding: "28px 24px",
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+        }}
+      >
+        <h3
           style={{
-            position: "absolute", top: 0, left: 0,
-            width: svgDims.w, height: svgDims.h,
-            pointerEvents: "none", zIndex: 20,
-            borderRadius: 20, overflow: "hidden",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 26,
+            fontWeight: 700,
+            color: "#F4F8FA",
+            marginBottom: 12,
           }}
         >
+          {project.title}
+        </h3>
+
+        <p
+          style={{
+            color: "#8CA3B5",
+            fontSize: 14.5,
+            lineHeight: 1.6,
+            marginBottom: 24,
+          }}
+        >
+          {project.description}
+        </p>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 32 }}>
+          {project.tech.map((t) => (
+            <span
+              key={t}
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 11,
+                color: "#D6E3EC",
+                background: "rgba(255, 255, 255, 0.04)",
+                border: "1px solid rgba(180, 198, 212, 0.2)",
+                padding: "6px 12px",
+                borderRadius: 8,
+              }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+
+        <div style={{ marginTop: "auto", display: "flex", gap: 20, alignItems: "center" }}>
+          <a
+            href={project.live}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#A28CD3", 
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 15,
+              fontWeight: 600,
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            View Project <span style={{ fontSize: 18 }}>→</span>
+          </a>
+
+          <a
+            href={project.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#8CA3B5",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 14,
+              fontWeight: 500,
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            GitHub ↗
+          </a>
+        </div>
+      </div>
+    </article>
+  );
+
+  return (
+    <section
+      id="vessel"
+      ref={revealRef}
+      className="abyss-section-contain"
+      style={{
+        padding: "120px clamp(24px, 6vw, 96px)",
+        position: "relative",
+        zIndex: 2,
+        maxWidth: 1560,
+        margin: "0 auto",
+        ...revealStyle,
+      }}
+    >
+      <style>{`
+        .projects-layout {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: stretch; 
+          gap: 0;
+          position: relative;
+          z-index: 2; /* Keeps content above the ambient background */
+        }
+        .project-column {
+          display: flex;
+          flex-direction: column;
+          gap: 40px; 
+          flex: 1;
+          min-width: 320px;
+          max-width: 480px;
+        }
+        .abyss-connector {
+          flex: 1.5; 
+          min-width: 350px;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          position: relative;
+          margin: 0 20px;
+          padding-top: 150px;
+        }
+        @media (max-width: 1100px) {
+          .projects-layout {
+            flex-direction: column !important;
+            align-items: center;
+            gap: 40px;
+          }
+          .abyss-connector {
+            display: none !important;
+          }
+          .project-column {
+            min-width: 0;
+            max-width: 100%;
+            width: 100%;
+          }
+        }
+      `}</style>
+
+      {/* ======================================================================
+          AMBIENT BACKGROUND LAYER (Moves freely across the entire section)
+      ====================================================================== */}
+      <div 
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 0,
+          overflow: "hidden",
+          borderRadius: "40px", /* Softens edges if it spills */
+        }}
+      >
+        <svg
+          viewBox="0 0 1600 900"
+          preserveAspectRatio="xMidYMid slice"
+          style={{ width: "100%", height: "100%", opacity: 0.8 }}
+        >
           <defs>
-            <filter id={filterId} x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="5" result="outerBlur" />
-              <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="innerBlur" />
+            <filter id="bgGlowJelly">
+              <feGaussianBlur stdDeviation="8" result="coloredBlur" />
               <feMerge>
-                <feMergeNode in="outerBlur" />
-                <feMergeNode in="innerBlur" />
+                <feMergeNode in="coloredBlur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
-          {/* Faint base ring */}
-          <rect x="1" y="1" width={svgDims.w - 2} height={svgDims.h - 2}
-            rx="19" ry="19" fill="none"
-            stroke={project.color + "18"} strokeWidth="1.5" />
-          {/* Animated energy beam */}
-          <rect ref={beamRef} x="1" y="1" width={svgDims.w - 2} height={svgDims.h - 2}
-            rx="19" ry="19" fill="none"
-            stroke={project.color} strokeWidth="2.5" strokeLinecap="round"
-            filter={`url(#${filterId})`} />
+
+          {/* BACKGROUND: GIANT MANTA RAY SWEEPING FULL SCREEN */}
+          <g fill="rgba(104, 176, 198, 0.06)">
+            <path d="M 0 -25 Q 50 0 100 -15 Q 50 15 0 50 Q -50 15 -100 -15 Q -50 0 0 -25 Z" />
+            <path d="M 0 50 Q 8 100 0 150" fill="none" stroke="rgba(104, 176, 198, 0.1)" strokeWidth="2" />
+            <animateMotion 
+              path="M -200 800 C 400 600, 1000 200, 1800 100" 
+              dur="45s" 
+              repeatCount="indefinite" 
+              rotate="auto" 
+            />
+          </g>
+
+          {/* BACKGROUND: DISTANT SCHOOL OF FISH */}
+          <g fill="rgba(140, 208, 227, 0.3)">
+            <path d="M 0 0 C -2 -2, -6 -2, -8 0 L -12 -2 L -12 2 L -8 0 C -6 2, -2 2, 0 0 Z" />
+            <path d="M -15 10 C -17 8, -21 8, -23 10 L -27 8 L -27 12 L -23 10 C -21 12, -17 12, -15 10 Z" />
+            <path d="M -25 -10 C -27 -12, -31 -12, -33 -10 L -37 -12 L -37 -8 L -33 -10 C -31 -8, -27 -8, -25 -10 Z" />
+            <animateMotion 
+              path="M 1800 700 C 1200 800, 600 500, -200 600" 
+              dur="35s" 
+              repeatCount="indefinite" 
+              rotate="auto" 
+            />
+          </g>
+
+          {/* BACKGROUND: PULSING JELLYFISH 1 (Left Side) */}
+          <g filter="url(#bgGlowJelly)">
+            <path d="M -18 0 C -18 -20, 18 -20, 18 0 Z" fill="rgba(162, 140, 211, 0.15)" />
+            <path d="M -12 0 Q -18 15 -12 30 T -12 60" fill="none" stroke="rgba(162, 140, 211, 0.25)" strokeWidth="1.2" />
+            <path d="M 0 0 Q 8 20 0 40 T 0 70" fill="none" stroke="rgba(162, 140, 211, 0.4)" strokeWidth="1.5" />
+            <path d="M 12 0 Q 18 15 12 30 T 12 60" fill="none" stroke="rgba(162, 140, 211, 0.25)" strokeWidth="1.2" />
+            <animateMotion 
+              path="M 300 1000 C 350 700, 200 400, 300 -100" 
+              dur="38s" 
+              repeatCount="indefinite" 
+            />
+            <animateTransform 
+              attributeName="transform" type="rotate" values="-8; 8; -8" dur="7s" repeatCount="indefinite" 
+            />
+          </g>
+
+          {/* BACKGROUND: PULSING JELLYFISH 2 (Right Side) */}
+          <g filter="url(#bgGlowJelly)" opacity="0.7">
+            <path d="M -14 0 C -14 -15, 14 -15, 14 0 Z" fill="rgba(104, 176, 198, 0.2)" />
+            <path d="M -8 0 Q -12 10 -8 20 T -8 40" fill="none" stroke="rgba(104, 176, 198, 0.3)" strokeWidth="1" />
+            <path d="M 0 0 Q 5 15 0 30 T 0 50" fill="none" stroke="rgba(104, 176, 198, 0.4)" strokeWidth="1.2" />
+            <path d="M 8 0 Q 12 10 8 20 T 8 40" fill="none" stroke="rgba(104, 176, 198, 0.3)" strokeWidth="1" />
+            <animateMotion 
+              path="M 1300 950 C 1200 650, 1400 350, 1250 -50" 
+              dur="32s" 
+              repeatCount="indefinite" 
+            />
+            <animateTransform 
+              attributeName="transform" type="rotate" values="-5; 5; -5" dur="5s" repeatCount="indefinite" 
+            />
+          </g>
         </svg>
-      )}
-
-      {/* ── Screenshot / Preview Image ── */}
-      <div style={{
-        position: "relative", height: 210, overflow: "hidden",
-        borderRadius: "20px 20px 0 0", flexShrink: 0,
-      }}>
-        {project.image ? (
-          <img
-            src={project.image}
-            alt={`${project.title} screenshot`}
-            style={{
-              width: "100%", height: "100%", objectFit: "cover", objectPosition: "top",
-              display: "block",
-              transform: hovered ? "scale(1.06)" : "scale(1)",
-              transition: "transform 0.5s cubic-bezier(0.2,0.8,0.2,1)",
-            }}
-            onError={e => { e.currentTarget.style.display = "none"; }}
-          />
-        ) : (
-          /* Gradient placeholder when no image is provided */
-          <div style={{
-            width: "100%", height: "100%",
-            background: `linear-gradient(135deg, ${project.color}18 0%, rgba(5,8,18,0.95) 100%)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <div style={{
-              fontSize: 56, opacity: 0.15,
-              background: `linear-gradient(135deg, ${project.color}, #fff)`,
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            }}>◈</div>
-          </div>
-        )}
-
-        {/* Bottom gradient — fades image into card body */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, transparent 35%, rgba(8,12,28,0.7) 70%, rgba(8,12,28,0.98) 100%)",
-          pointerEvents: "none",
-        }} />
-
-        {/* Category badge — top-right inside image */}
-        <span style={{
-          position: "absolute", top: 14, right: 14, zIndex: 2,
-          background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)",
-          border: `1px solid ${project.color}55`,
-          borderRadius: 6, padding: "4px 11px",
-          fontSize: 10, color: project.color,
-          fontFamily: "'JetBrains Mono'", letterSpacing: "0.1em",
-        }}>{project.category}</span>
-
-        {/* Hover arrow — top-left */}
-        <div style={{
-          position: "absolute", top: 14, left: 14, zIndex: 2,
-          opacity: hovered ? 1 : 0, transition: "opacity 0.25s",
-          color: "#fff", fontSize: 18, filter: "drop-shadow(0 0 6px #fff8)",
-        }}>↗</div>
       </div>
 
-      {/* ── Text body ── */}
-      <div style={{ padding: "22px 24px 24px", display: "flex", flexDirection: "column", flex: 1, position: "relative", zIndex: 6 }}>
-
-        {/* Title + subtitle */}
-        <h3 style={{
-          fontFamily: "'Space Grotesk'", fontSize: 22, fontWeight: 700,
-          marginBottom: 4, color: "#F8FAFC", lineHeight: 1.2,
-        }}>{project.title}</h3>
-        <div style={{ color: project.color, fontSize: 12, marginBottom: 12, fontFamily: "'JetBrains Mono'", letterSpacing: "0.04em" }}>{project.subtitle}</div>
-
-        {/* Description */}
-        <p style={{ color: "#94A3B8", fontSize: 13.5, lineHeight: 1.65, marginBottom: 18, flex: 1 }}>{project.description}</p>
-
-        {/* Tech tags */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
-          {project.tech.map(t => (
-            <span key={t} style={{
-              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.11)",
-              borderRadius: 6, padding: "4px 10px", fontSize: 11, color: "#CBD5E1",
-              fontFamily: "'JetBrains Mono'",
-            }}>{t}</span>
-          ))}
-        </div>
-
-        {/* ── Footer: View Project + icon buttons ── */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 16,
-        }}>
-          {/* Primary CTA — matches reference "View Project ↗ →" */}
-          <a
-            href={project.live && project.live !== "#" ? project.live : project.github}
-            target="_blank" rel="noopener noreferrer"
-            onClick={e => e.stopPropagation()}
-            style={{
-              display: "flex", alignItems: "center", gap: 8,
-              color: project.color, fontSize: 14, fontWeight: 700,
-              textDecoration: "none", fontFamily: "'Space Grotesk'",
-              transition: "gap 0.2s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.gap = "12px"}
-            onMouseLeave={e => e.currentTarget.style.gap = "8px"}
-          >
-            <span style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              width: 22, height: 22, borderRadius: "50%",
-              border: `1.5px solid ${project.color}`,
-              fontSize: 11,
-            }}>↗</span>
-            View Project&nbsp;→
-          </a>
-
-          {/* Secondary icon buttons */}
-          <div style={{ display: "flex", gap: 6 }}>
-            {project.github && project.github !== "#" && (
-              <button
-                onClick={e => handleLinkClick(e, project.github)}
-                title="GitHub"
-                style={{
-                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8, padding: "7px 12px", color: "#94A3B8",
-                  fontSize: 11, cursor: "pointer", fontFamily: "'JetBrains Mono'",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#F8FAFC"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#94A3B8"; }}
-              >GitHub</button>
-            )}
-            <button
-              onClick={e => { e.stopPropagation(); onOpen(project); }}
-              title="See project details"
-              style={{
-                background: project.color + "15", border: `1px solid ${project.color}40`,
-                borderRadius: 8, padding: "7px 12px", color: project.color,
-                fontSize: 11, cursor: "pointer", fontFamily: "'JetBrains Mono'",
-                whiteSpace: "nowrap", transition: "all 0.2s",
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = project.color + "28"}
-              onMouseLeave={e => e.currentTarget.style.background = project.color + "15"}
-            >Details</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-function ProjectModal({ project, onClose }) {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    const onKey = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-      window.removeEventListener("resize", checkMobile);
-    };
-  }, [onClose]);
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 5000,
-      background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: isMobile ? "16px" : "24px", animation: "fadeIn 0.2s ease",
-    }} onClick={onClose}>
-      <div style={{
-        background: "rgba(5,8,18,0.98)", border: `1px solid ${project.color}44`,
-        borderRadius: 20, padding: isMobile ? "24px 20px" : "40px",
-        maxWidth: 800, width: "100%", maxHeight: "88vh", overflow: "auto",
-        animation: "scaleIn 0.3s ease",
-      }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28, gap: 16 }}>
-          <div>
-            <span style={{ background: project.color + "22", border: `1px solid ${project.color}44`, borderRadius: 6, padding: "3px 10px", fontSize: 11, color: project.color, fontFamily: "'JetBrains Mono'" }}>{project.category}</span>
-            <h2 style={{ fontFamily: "'Space Grotesk'", fontSize: "clamp(22px,5vw,36px)", fontWeight: 800, marginTop: 12, color: "#F8FAFC" }}>{project.title}</h2>
-            <div style={{ color: project.color, fontSize: 15 }}>{project.subtitle}</div>
-          </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "8px 14px", color: "#F8FAFC88", cursor: "pointer", fontSize: 18, flexShrink: 0 }}>✕</button>
-        </div>
-
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ color: "#F8FAFC44", fontSize: 11, letterSpacing: "0.15em", marginBottom: 14, fontFamily: "'JetBrains Mono'" }}>ARCHITECTURE</div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            {project.architecture.map((layer, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ background: project.color + "15", border: `1px solid ${project.color}33`, borderRadius: 8, padding: "8px 14px", fontSize: 12, color: project.color, fontFamily: "'JetBrains Mono'" }}>{layer}</div>
-                {i < project.architecture.length - 1 && <div style={{ color: project.color + "66", fontSize: 14 }}>↓</div>}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 28 }}>
-          {[{ label: "PROBLEM", value: project.problem }, { label: "SOLUTION", value: project.solution }].map(({ label, value }) => (
-            <div key={label} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: 18 }}>
-              <div style={{ color: "#F8FAFC44", fontSize: 10, letterSpacing: "0.15em", marginBottom: 8, fontFamily: "'JetBrains Mono'" }}>{label}</div>
-              <div style={{ color: "#F8FAFCcc", fontSize: 13, lineHeight: 1.6 }}>{value}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ color: "#F8FAFC44", fontSize: 11, letterSpacing: "0.15em", marginBottom: 12, fontFamily: "'JetBrains Mono'" }}>TECH STACK</div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {project.tech.map(t => <span key={t} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "6px 14px", fontSize: 13, color: "#F8FAFC" }}>{t}</span>)}
-          </div>
-        </div>
-
-        {/* Links section */}
-        <div>
-          <div style={{ color: "#F8FAFC44", fontSize: 11, letterSpacing: "0.15em", marginBottom: 12, fontFamily: "'JetBrains Mono'" }}>PROJECT LINKS</div>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            {project.github && project.github !== "#" ? (
-              <a href={project.github} target="_blank" rel="noopener noreferrer"
-                style={{
-                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: 10, padding: "12px 24px", color: "#F8FAFC",
-                  textDecoration: "none", fontSize: 13, fontFamily: "'JetBrains Mono'",
-                  display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s",
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
-                onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
-              >
-                <span>⌥</span> View on GitHub →
-              </a>
-            ) : (
-              <div style={{
-                background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.1)",
-                borderRadius: 10, padding: "12px 24px", color: "#F8FAFC44",
-                fontSize: 12, fontFamily: "'JetBrains Mono'",
-              }}>
-                GitHub — Coming Soon
-              </div>
-            )}
-            {project.live && project.live !== "#" && project.live !== "" ? (
-              <a href={project.live} target="_blank" rel="noopener noreferrer"
-                style={{
-                  background: `linear-gradient(135deg, ${project.color}, #7C3AED)`,
-                  border: "none", borderRadius: 10, padding: "12px 24px",
-                  color: "#050816", textDecoration: "none", fontSize: 13,
-                  fontWeight: 700, fontFamily: "'JetBrains Mono'",
-                  display: "flex", alignItems: "center", gap: 8,
-                }}
-              >
-                ↗ Live Demo
-              </a>
-            ) : (
-              <div style={{
-                background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.1)",
-                borderRadius: 10, padding: "12px 24px", color: "#F8FAFC44",
-                fontSize: 12, fontFamily: "'JetBrains Mono'",
-              }}>
-                Live Demo — Coming Soon
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BuildsSection() {
-  const [openProject, setOpenProject] = useState(null);
-  
-  return (
-    <div 
-      id="projects" 
-      style={{ 
-        padding: "80px 20px", 
-        maxWidth: 1100, 
-        margin: "0 auto", 
-        position: "relative", 
-        // Update the zIndex dynamically here:
-        zIndex: openProject ? 9999 : 1 
-      }}
-    >
-      <SectionMeta index="04" label="BUILDS" />
-      <SectionHeading>Project Modules</SectionHeading>
-      <SectionSub>Things I've built that are alive and doing something useful.</SectionSub>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(380px,100%),1fr))", gap: 24, alignItems: "start" }}>
-        {PROJECTS.map(p => <ProjectCard key={p.id} project={p} onOpen={setOpenProject} />)}
-      </div>
-      {openProject && <ProjectModal project={openProject} onClose={() => setOpenProject(null)} />}
-    </div>
-  );
-}
-
-// ============================================================
-// CERTIFICATE DETAIL PAGE (Full-page view matching screenshot)
-// ============================================================
-function CertificateModal({ cert, onClose }) {
-  const [isMobile, setIsMobile] = useState(false);
-  const [imgExpanded, setImgExpanded] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    const onKey = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-      window.removeEventListener("resize", checkMobile);
-    };
-  }, [onClose]);
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 6000,
-      background: "#050812",
-      display: "flex", flexDirection: "column",
-      animation: "fadeIn 0.25s ease",
-      overflowY: "auto",
-    }}>
-      {/* ── Top bar ── */}
-      <div style={{
-        position: "sticky", top: 0, zIndex: 10,
-        background: "rgba(5,8,18,0.95)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 20px", height: 52, flexShrink: 0,
-      }}>
-        {/* Left: initials + back */}
-        <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #00E5FF, #7C3AED)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 12, fontWeight: 800, color: "#050812",
-            fontFamily: "'Space Grotesk'", marginRight: 16, flexShrink: 0,
-          }}>KVS</div>
-          <div style={{ width: 1, height: 24, background: "rgba(255,255,255,0.12)", marginRight: 16 }} />
-          <button onClick={onClose} style={{
-            background: "none", border: "none", cursor: "pointer",
-            color: "#00E5FF", fontSize: 13, fontFamily: "'Inter'",
-            display: "flex", alignItems: "center", gap: 6, padding: 0,
-          }}>
-            <span style={{ fontSize: 15 }}>‹</span> Back to Certificates
-          </button>
-        </div>
-
-        {/* Right: label */}
-        <div style={{
-          background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 8, padding: "6px 14px", fontSize: 12,
-          color: "#F8FAFCcc", fontFamily: "'JetBrains Mono'",
-          display: "flex", alignItems: "center", gap: 7,
-        }}>
-          <span style={{ fontSize: 13 }}>🪪</span> Credentials Details
-        </div>
-      </div>
-
-      {/* ── Body ── */}
-      <div style={{
-        flex: 1,
-        maxWidth: 1100, margin: "0 auto", width: "100%",
-        padding: isMobile ? "32px 16px 60px" : "52px 40px 80px",
-      }}>
-        {/* Verified badge + title */}
-        <div style={{ marginBottom: 20 }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 7,
-            background: "rgba(124,58,237,0.18)", border: "1px solid rgba(124,58,237,0.35)",
-            borderRadius: 100, padding: "5px 14px",
-            fontSize: 11, color: "#A78BFA", fontFamily: "'JetBrains Mono'",
-            marginBottom: 18,
-          }}>
-            🔒 VERIFIED CREDENTIAL
-          </span>
-
-          <h1 style={{
-            fontFamily: "'Space Grotesk'",
-            fontSize: isMobile ? "clamp(22px,6vw,32px)" : "clamp(28px,3.5vw,44px)",
-            fontWeight: 800, color: "#F8FAFC", lineHeight: 1.2, marginBottom: 14,
-          }}>{cert.title}</h1>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#94A3B8" }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22C55E", display: "inline-block", boxShadow: "0 0 6px #22C55E" }} />
-              Issued by: <strong style={{ color: "#F8FAFC" }}>{cert.issuer}</strong>
-            </span>
-            <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
-            <span style={{ fontSize: 14, color: "#94A3B8" }}>
-              Date: <strong style={{ color: "#F8FAFC" }}>{cert.date}</strong>
-            </span>
-          </div>
-
-          <p style={{ color: "#94A3B8", fontSize: 14, lineHeight: 1.7, maxWidth: 640 }}>{cert.description}</p>
-        </div>
-
-        {/* ── Two-column layout ── */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 340px",
-          gap: 24, alignItems: "start", marginTop: 32,
-        }}>
-          {/* Left: Certificate image preview */}
-          <div style={{
-            background: "rgba(15,23,42,0.5)", border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 20, padding: 24,
-          }}>
-            <div
-              onClick={() => setImgExpanded(true)}
-              style={{
-                background: "#FFF", borderRadius: 12, overflow: "hidden",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                minHeight: 280, cursor: "zoom-in", position: "relative",
-              }}
-            >
-              {cert.image ? (
-                <img
-                  src={cert.image}
-                  alt={cert.title}
-                  style={{ width: "100%", height: "auto", display: "block", objectFit: "contain" }}
-                  onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
-                />
-              ) : null}
-              {/* Fallback when no image / image fails */}
-              <div style={{
-                display: cert.image ? "none" : "flex",
-                flexDirection: "column", alignItems: "center", justifyContent: "center",
-                width: "100%", minHeight: 280, gap: 12,
-              }}>
-                <span style={{ fontSize: 64 }}>{cert.logo}</span>
-                <span style={{ fontSize: 13, color: "#64748B", fontFamily: "'JetBrains Mono'" }}>Certificate Preview</span>
-              </div>
-            </div>
-            <div style={{ textAlign: "center", marginTop: 12, color: "#F59E0B", fontSize: 12, fontFamily: "'Inter'" }}>
-              🖱 Click image to view full size
-            </div>
-          </div>
-
-          {/* Right: Info panels + buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Skills Validated */}
-            <div style={{
-              background: "rgba(15,23,42,0.5)", border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 16, padding: "20px 22px",
-            }}>
-              <div style={{ color: cert.color, fontSize: 13, fontWeight: 700, fontFamily: "'Space Grotesk'", marginBottom: 14 }}>
-                Skills Validated
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {cert.skills.map(s => (
-                  <span key={s} style={{
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.14)",
-                    borderRadius: 8, padding: "6px 14px", fontSize: 13, color: "#F8FAFCdd",
-                    fontFamily: "'Inter'",
-                  }}>{s}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Verification Details */}
-            <div style={{
-              background: "rgba(15,23,42,0.5)", border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 16, padding: "20px 22px",
-            }}>
-              <div style={{ color: cert.color, fontSize: 13, fontWeight: 700, fontFamily: "'Space Grotesk'", marginBottom: 16 }}>
-                Verification Details
-              </div>
-              {[
-                { label: "Credential ID", value: cert.credentialId, mono: true },
-                { label: "Status", value: cert.status, green: true },
-                { label: "Issue Date", value: cert.issueDate },
-              ].map(row => (
-                <div key={row.label} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: "10px 0",
-                  borderBottom: "1px solid rgba(255,255,255,0.05)",
-                }}>
-                  <span style={{ color: "#64748B", fontSize: 13 }}>{row.label}</span>
-                  <span style={{
-                    fontSize: 13,
-                    color: row.green ? "#22C55E" : "#F8FAFCcc",
-                    fontFamily: row.mono ? "'JetBrains Mono'" : "'Inter'",
-                    display: "flex", alignItems: "center", gap: 5,
-                  }}>
-                    {row.green && <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", display: "inline-block", boxShadow: "0 0 6px #22C55E" }} />}
-                    {row.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Verify Online button */}
-            <a href={cert.link} target="_blank" rel="noopener noreferrer" style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              background: "linear-gradient(135deg, #7C3AED, #6D28D9)",
-              border: "none", borderRadius: 12, padding: "15px 24px",
-              color: "#FFF", textDecoration: "none", fontSize: 14, fontWeight: 700,
-              fontFamily: "'Space Grotesk'", cursor: "pointer",
-              boxShadow: "0 4px 20px rgba(124,58,237,0.35)",
-              transition: "all 0.2s",
-            }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 28px rgba(124,58,237,0.55)"}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 20px rgba(124,58,237,0.35)"}
-            >
-              <span style={{ fontSize: 15 }}>↗</span> Verify Online
-            </a>
-
-            {/* Contact button */}
-            <a href={`mailto:karanveersinghk014@gmail.com?subject=Question about: ${cert.title}`} style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 12, padding: "14px 24px",
-              color: "#F8FAFCcc", textDecoration: "none", fontSize: 14, fontWeight: 600,
-              fontFamily: "'Space Grotesk'", cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
-            >
-              ✉ Questions? Contact Me
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Footer ── */}
-      <div style={{
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        padding: "20px 40px", textAlign: "center",
-        color: "#F8FAFC22", fontSize: 12, fontFamily: "'Inter'",
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-        flexShrink: 0,
-      }}>
-        © 2026 Karanveer Singh. All Rights Reserved <span style={{ color: "#EF4444" }}>❤</span>
-      </div>
-
-      {/* ── Lightbox when image is clicked ── */}
-      {imgExpanded && (
+      <div style={{ marginBottom: 56, maxWidth: 800, position: "relative", zIndex: 2 }}>
         <div
-          onClick={() => setImgExpanded(false)}
           style={{
-            position: "fixed", inset: 0, zIndex: 9000,
-            background: "rgba(0,0,0,0.92)", backdropFilter: "blur(8px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: 24, cursor: "zoom-out",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.24em",
+            color: "#8CD0E3",
+            marginBottom: 14,
           }}
         >
-          <img
-            src={cert.image}
-            alt={cert.title}
-            style={{ maxWidth: "90vw", maxHeight: "90vh", objectFit: "contain", borderRadius: 12, boxShadow: "0 20px 80px rgba(0,0,0,0.8)" }}
-          />
-          <button
-            onClick={() => setImgExpanded(false)}
-            style={{
-              position: "absolute", top: 20, right: 20,
-              background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: 10, width: 40, height: 40, cursor: "pointer",
-              color: "#F8FAFC", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >✕</button>
+          ZONE C // 540m MESOPELAGIC RESEARCH VESSEL
         </div>
-      )}
-    </div>
+        <h2
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(36px, 5.5vw, 64px)",
+            fontWeight: 500,
+            color: "#F4F8FA",
+            lineHeight: 1.05,
+            marginBottom: 18,
+          }}
+        >
+          Engineered discoveries, live in open water.
+        </h2>
+      </div>
+
+      <div className="projects-layout">
+        {/* LEFT COLUMN: BrainBlitz (0) and Fluxora (2) */}
+        <div className="project-column">
+          {renderProjectCard(PROJECTS[0])}
+          {renderProjectCard(PROJECTS[2])}
+        </div>
+
+        {/* CONNECTOR: The Animation SVG looping specifically between BrainBlitz and Studora */}
+        <div className="abyss-connector">
+          <svg
+            viewBox="0 0 500 400"
+            preserveAspectRatio="xMidYMid slice"
+            style={{
+              width: "100%",
+              height: "400px",
+              overflow: "visible",
+              pointerEvents: "none",
+            }}
+          >
+            <defs>
+              <filter id="glowArc">
+                <feGaussianBlur stdDeviation="5" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {/* THE MAIN BIOLUMINESCENT ARC (Static partial circle) */}
+            <path
+              d="M 0 100 Q 250 200 500 100"
+              fill="none"
+              stroke="#68B0C6"
+              strokeWidth="1.5"
+              strokeDasharray="4 8"
+              filter="url(#glowArc)"
+              opacity="0.6"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="120"
+                to="0"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </path>
+
+            {/* Nodes touching BrainBlitz and Studora */}
+            <circle cx="0" cy="100" r="4" fill="#8CD0E3" filter="url(#glowArc)">
+              <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="500" cy="100" r="4" fill="#8CD0E3" filter="url(#glowArc)">
+              <animate attributeName="r" values="3;6;3" dur="2.5s" repeatCount="indefinite" />
+            </circle>
+
+            {/* ==================================================================
+                FOREGROUND: CREATURES CIRCLING THE CONNECTION
+            ================================================================== */}
+            
+            {/* Coordinated School of Fish (Clockwise Oval Loop) */}
+            <g fill="rgba(140, 208, 227, 0.75)">
+              <path d="M 0 0 C -3 -3, -10 -3, -13 0 L -18 -3 L -18 3 L -13 0 C -10 3, -3 3, 0 0 Z" />
+              <path d="M -25 15 C -28 12, -35 12, -38 15 L -43 12 L -43 18 L -38 15 C -35 18, -28 18, -25 15 Z" />
+              <path d="M -20 -12 C -22 -14, -28 -14, -30 -12 L -34 -14 L -34 -10 L -30 -12 C -28 -10, -22 -10, -20 -12 Z" />
+              <animateMotion
+                path="M 0 100 C 150 250, 350 250, 500 100 C 350 -50, 150 -50, 0 100 Z"
+                dur="18s"
+                repeatCount="indefinite"
+                rotate="auto"
+              />
+            </g>
+
+            {/* Darting Predator Fish (Counter-Clockwise Oval Loop) */}
+            <g fill="rgba(104, 176, 198, 0.95)">
+              <path d="M 0 0 C -5 -4, -14 -4, -18 0 L -25 -5 L -25 5 L -18 0 C -14 4, -5 4, 0 0 Z" />
+              <animateMotion
+                path="M 500 100 C 350 250, 150 250, 0 100 C 150 -50, 350 -50, 500 100 Z"
+                dur="14s"
+                repeatCount="indefinite"
+                rotate="auto"
+              />
+            </g>
+
+            {/* Extra Ambient Glowing Data-Fish on the Connection Loop */}
+            <g fill="#A28CD3">
+              <path d="M 0 0 C -2 -2, -6 -2, -8 0 L -12 -2 L -12 2 L -8 0 C -6 2, -2 2, 0 0 Z" filter="url(#glowArc)" />
+              <animateMotion
+                path="M 0 100 C 200 200, 300 200, 500 100 C 300 0, 200 0, 0 100 Z"
+                dur="12s"
+                repeatCount="indefinite"
+                rotate="auto"
+              />
+            </g>
+
+            <g fill="#7CE0B8">
+              <path d="M 0 0 C -2 -2, -5 -2, -7 0 L -10 -2 L -10 2 L -7 0 C -5 2, -2 2, 0 0 Z" filter="url(#glowArc)" />
+              <animateMotion
+                path="M 500 100 C 300 220, 200 220, 0 100 C 200 -20, 300 -20, 500 100 Z"
+                dur="15s"
+                repeatCount="indefinite"
+                rotate="auto"
+              />
+            </g>
+          </svg>
+        </div>
+
+        {/* RIGHT COLUMN: Studora (1) */}
+        <div className="project-column" style={{ justifyContent: "flex-start" }}>
+          {renderProjectCard(PROJECTS[1])}
+        </div>
+      </div>
+    </section>
   );
 }
+// ============================================================================
+// ZONE C.2 — HYDROGRAPHIC ARCHIVE (VERIFIED CERTIFICATES & PUBLICATIONS)
+// ============================================================================
+export function CredentialsArchive({ onSelectCertificate }) {
+  const [revealRef, revealStyle] = useReveal();
 
-// ============================================================
-// CERTIFICATES SECTION
-// ============================================================
-function CertificatesSection({ onOpenCert }) {
   return (
-    <div id="certificates" style={{ padding: "80px 20px", maxWidth: 1000, margin: "0 auto", position: "relative", zIndex: 1 }}>
-      <SectionMeta index="04.5" label="ACHIEVEMENTS" />
-      
-      {/* Updated header flexbox to keep items aligned properly on mobile */}
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center", 
-        marginBottom: 32, 
-        gap: 16 
-      }}>
-        <div style={{ flex: 1 }}>
-          <SectionHeading>Certificates</SectionHeading>
-          <SectionSub>Here are some of my certifications and achievements.</SectionSub>
+    <section
+      id="credentials"
+      ref={revealRef}
+      className="abyss-section-contain"
+      style={{
+        padding: "110px clamp(24px, 6vw, 96px)",
+        position: "relative",
+        zIndex: 2,
+        maxWidth: 1320,
+        margin: "0 auto",
+        ...revealStyle,
+      }}
+    >
+      <div style={{ marginBottom: 48 }}>
+        <div
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.24em",
+            color: "#E6B87C",
+            marginBottom: 14,
+          }}
+        >
+          ZONE C.2 // 1,080m HYDROGRAPHIC ARCHIVE — VERIFIED CREDENTIALS & RESEARCH
         </div>
-        <div style={{
-          width: 50, height: 50, borderRadius: "50%",
-          background: "linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.02))",
-          border: "1px solid rgba(255, 215, 0, 0.2)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 0 20px rgba(255, 215, 0, 0.1)",
-          flexShrink: 0 // Prevents the badge from shrinking or wrapping
-        }}>
-          <span style={{ fontSize: 24 }}>⭐</span>
-        </div>
+        <h2
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(34px, 5vw, 60px)",
+            fontWeight: 500,
+            color: "#F4F8FA",
+            lineHeight: 1.08,
+            marginBottom: 16,
+          }}
+        >
+          Validated certifications & conference publications.
+        </h2>
+        <p
+          style={{
+            color: "#C4D4E0",
+            fontSize: 15.5,
+            lineHeight: 1.65,
+            maxWidth: 660,
+          }}
+        >
+          Every credential below includes its original issuer, issue date, and
+          credential identifier. Select any record to inspect the full archival
+          dossier.
+        </p>
       </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <button style={{
-          background: "linear-gradient(135deg, #7C3AED, #9333EA)",
-          border: "none", borderRadius: 8, padding: "8px 20px",
-          color: "#FFF", fontSize: 13, fontWeight: 600, cursor: "pointer"
-        }}>All</button>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))",
+          gap: 24,
+        }}
+      >
         {CERTIFICATES.map((cert) => (
-          <div key={cert.id} onClick={() => onOpenCert(cert)} style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: "rgba(15,23,42,0.4)", border: "1px solid rgba(255,255,255,0.05)",
-            borderRadius: 16, padding: "16px 24px", cursor: "pointer",
-            transition: "all 0.2s", gap: 16,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(15,23,42,0.8)";
-            e.currentTarget.style.borderColor = cert.color + "55";
-            e.currentTarget.style.transform = "translateX(8px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(15,23,42,0.4)";
-            e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)";
-            e.currentTarget.style.transform = "none";
-          }}>
-            
-            <div style={{ display: "flex", alignItems: "center", gap: 16, flex: 1 }}>
-              <div style={{
-                width: 48, height: 48, borderRadius: 12, background: "#FFF",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 24, flexShrink: 0
-              }}>
-                {cert.logo}
+          <div
+            key={cert.id}
+            onClick={() => onSelectCertificate(cert)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && onSelectCertificate(cert)}
+            style={{
+              background: "rgba(3, 12, 22, 0.76)",
+              border: "1px solid rgba(180, 198, 212, 0.18)",
+              borderRadius: 20,
+              padding: "28px 26px",
+              cursor: "pointer",
+              backdropFilter: "blur(14px)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              transition: "border-color 0.25s ease, transform 0.25s ease",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 10,
+                    letterSpacing: "0.18em",
+                    color: "#E6B87C",
+                  }}
+                >
+                  {cert.code} · {cert.date.toUpperCase()}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 10,
+                    color: "#7CE0B8",
+                    background: "rgba(124, 224, 184, 0.1)",
+                    border: "1px solid rgba(124, 224, 184, 0.3)",
+                    padding: "3px 9px",
+                    borderRadius: 100,
+                  }}
+                >
+                  ● {cert.status.toUpperCase()}
+                </span>
               </div>
-              
-              <div>
-                <h4 style={{ color: "#F8FAFC", fontSize: 15, fontWeight: 600, fontFamily: "'Space Grotesk'", marginBottom: 4 }}>{cert.title}</h4>
-                <div style={{ color: "#94A3B8", fontSize: 13 }}>
-                  {cert.issuer} <br/>
-                  <span style={{ fontSize: 11, opacity: 0.7 }}>Issued: {cert.date}</span>
-                </div>
+
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontSize: 27,
+                  fontWeight: 600,
+                  color: "#F4F8FA",
+                  lineHeight: 1.2,
+                  marginBottom: 8,
+                }}
+              >
+                {cert.title}
+              </h3>
+
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 11.5,
+                  color: "#8CD0E3",
+                  marginBottom: 14,
+                }}
+              >
+                Issued by {cert.issuer} · ID: {cert.credentialId}
               </div>
+
+              <p
+                style={{
+                  color: "#C4D4E0",
+                  fontSize: 13.5,
+                  lineHeight: 1.62,
+                  marginBottom: 20,
+                }}
+              >
+                {cert.description}
+              </p>
             </div>
 
-            <div style={{
-              color: "#94A3B8", fontSize: 13, fontWeight: 600, 
-              display: "flex", alignItems: "center", gap: 6, flexShrink: 0
-            }}>
-              Visit <span style={{ fontSize: 14 }}>↗</span>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 6,
+                  marginBottom: 20,
+                }}
+              >
+                {cert.skills.map((s) => (
+                  <span
+                    key={s}
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: 10.5,
+                      color: "#D6E3EC",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(180, 198, 212, 0.16)",
+                      padding: "3px 9px",
+                      borderRadius: 6,
+                    }}
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  borderTop: "1px solid rgba(180, 198, 212, 0.12)",
+                  paddingTop: 14,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 11,
+                  color: "#EEF3F6",
+                }}
+              >
+                <span>INSPECT CREDENTIAL DOSSIER</span>
+                <span style={{ color: "#8CD0E3" }}>→</span>
+              </div>
             </div>
           </div>
         ))}
       </div>
+    </section>
+  );
+}
 
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
-        <button style={{
-          background: "linear-gradient(135deg, #7C3AED, #9333EA)",
-          border: "none", borderRadius: 100, padding: "12px 32px",
-          color: "#FFF", fontSize: 14, fontWeight: 600, cursor: "pointer",
-          display: "flex", alignItems: "center", gap: 8
-        }}>
-          View All Certificates 🪪
-        </button>
+// ============================================================================
+// CERTIFICATE DOSSIER MODAL
+// ============================================================================
+export function CertificateDossierModal({ cert, onClose }) {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [cert, onClose]);
+
+  if (!cert) return null;
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2000,
+        background: "rgba(1, 6, 12, 0.88)",
+        backdropFilter: "blur(16px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#04111D",
+          border: "1px solid rgba(180, 198, 212, 0.24)",
+          borderRadius: 22,
+          maxWidth: 880,
+          width: "100%",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          padding: "clamp(24px, 4vw, 44px)",
+          boxShadow: "0 30px 90px rgba(0,0,0,0.75)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 16,
+            marginBottom: 24,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10.5,
+                letterSpacing: "0.2em",
+                color: "#E6B87C",
+                marginBottom: 8,
+              }}
+            >
+              VERIFIED CREDENTIAL DOSSIER // {cert.credentialId}
+            </div>
+            <h3
+              style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: "clamp(26px, 4vw, 40px)",
+                color: "#F4F8FA",
+                lineHeight: 1.15,
+              }}
+            >
+              {cert.title}
+            </h3>
+          </div>
+
+          <button
+            onClick={onClose}
+            aria-label="Close credential dossier"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(180, 198, 212, 0.2)",
+              borderRadius: 100,
+              padding: "8px 14px",
+              color: "#EEF3F6",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              cursor: "pointer",
+            }}
+          >
+            ESC ✕
+          </button>
+        </div>
+
+        <div
+          style={{
+            background: "rgba(2, 8, 15, 0.9)",
+            border: "1px solid rgba(180, 198, 212, 0.16)",
+            borderRadius: 14,
+            overflow: "hidden",
+            marginBottom: 24,
+          }}
+        >
+          {!imgError ? (
+            <img
+              src={cert.image}
+              alt={cert.title}
+              style={{
+                width: "100%",
+                maxHeight: 380,
+                objectFit: "contain",
+                display: "block",
+                background: "#020810",
+              }}
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div
+              style={{
+                padding: "36px 28px",
+                textAlign: "center",
+                border: "1px dashed rgba(217, 167, 106, 0.35)",
+                margin: 16,
+                borderRadius: 10,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 11,
+                  color: "#E6B87C",
+                  letterSpacing: "0.18em",
+                  marginBottom: 8,
+                }}
+              >
+                OFFICIAL ARCHIVAL RECORD · {cert.issuer.toUpperCase()}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontSize: 28,
+                  color: "#F4F8FA",
+                  marginBottom: 6,
+                }}
+              >
+                {cert.title}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 12,
+                  color: "#8CA3B5",
+                }}
+              >
+                Recipient: Karanveer Singh · Issued: {cert.issueDate} · ID:{" "}
+                {cert.credentialId}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <p
+          style={{
+            color: "#D6E3EC",
+            fontSize: 15,
+            lineHeight: 1.68,
+            marginBottom: 24,
+          }}
+        >
+          {cert.description}
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(180px, 100%), 1fr))",
+            gap: 14,
+            marginBottom: 28,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              padding: 14,
+              borderRadius: 10,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10,
+                color: "#8CA3B5",
+              }}
+            >
+              ISSUING AUTHORITY
+            </div>
+            <div
+              style={{ color: "#EEF3F6", fontSize: 14, fontWeight: 600, marginTop: 4 }}
+            >
+              {cert.issuer}
+            </div>
+          </div>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              padding: 14,
+              borderRadius: 10,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10,
+                color: "#8CA3B5",
+              }}
+            >
+              ISSUE DATE
+            </div>
+            <div
+              style={{ color: "#EEF3F6", fontSize: 14, fontWeight: 600, marginTop: 4 }}
+            >
+              {cert.issueDate}
+            </div>
+          </div>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              padding: 14,
+              borderRadius: 10,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10,
+                color: "#8CA3B5",
+              }}
+            >
+              CREDENTIAL ID
+            </div>
+            <div
+              style={{
+                color: "#8CD0E3",
+                fontSize: 13.5,
+                fontFamily: "'JetBrains Mono', monospace",
+                marginTop: 4,
+              }}
+            >
+              {cert.credentialId}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          {cert.linkVerified && cert.link ? (
+            <a
+              href={cert.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: "#EEF3F6",
+                color: "#04111D",
+                padding: "12px 24px",
+                borderRadius: 100,
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 13.5,
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
+              {cert.linkLabel} ↗
+            </a>
+          ) : (
+            <span
+              style={{
+                background: "rgba(217, 167, 106, 0.12)",
+                border: "1px solid rgba(217, 167, 106, 0.35)",
+                color: "#E6B87C",
+                padding: "12px 20px",
+                borderRadius: 100,
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 11.5,
+              }}
+            >
+              {cert.linkLabel}
+            </span>
+          )}
+
+          <a
+            href={`mailto:${PROFILE.email}?subject=Inquiry regarding ${encodeURIComponent(
+              cert.title
+            )}`}
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(180, 198, 212, 0.2)",
+              color: "#EEF3F6",
+              padding: "12px 22px",
+              borderRadius: 100,
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 13.5,
+              textDecoration: "none",
+            }}
+          >
+            Request Copy / Inquiry via Email →
+          </a>
+        </div>
       </div>
     </div>
   );
 }
 
+// ============================================================================
+// ZONE D — THE ABYSS (TRAJECTORY, DEEP EXPERIMENTS & LONG-TERM AMBITIONS)
+// ============================================================================
+export function AbyssTrajectoryZone() {
+  const [revealRef, revealStyle] = useReveal();
+  
+  // 1. References for the timeline container and the glowing line
+  const timelineRef = useRef(null);
+  const glowLineRef = useRef(null);
 
-// ============================================================
-// PATH SECTION
-// ============================================================
-function PathSection() {
-  const containerRef = useRef(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-
+  // 2. Scroll effect to calculate fill percentage
   useEffect(() => {
     const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const progress = (window.innerHeight / 1.5 - rect.top) / rect.height;
-      setScrollProgress(Math.max(0, Math.min(1, progress)));
+      if (!timelineRef.current || !glowLineRef.current) return;
+      
+      const rect = timelineRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      // Start the glowing fill when the top of the timeline reaches 65% down the screen
+      const startThreshold = windowHeight * 0.65; 
+      
+      let progress = 0;
+      if (rect.top < startThreshold) {
+        progress = (startThreshold - rect.top) / rect.height;
+      }
+      
+      // Keep the progress clamped strictly between 0 and 1 (0% to 100%)
+      progress = Math.max(0, Math.min(1, progress));
+      
+      // Apply the dynamic height to the glowing line
+      glowLineRef.current.style.height = `${progress * 100}%`;
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    handleScroll(); // Trigger immediately to set initial state
+    
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <div id="path" ref={containerRef} style={{ padding: "80px 20px", maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-      <SectionMeta index="05" label="PATH" />
-      <SectionHeading>Energy cables between<br />the milestones.</SectionHeading>
-      <SectionSub>The trajectory so far, tracked as the page moves with you.</SectionSub>
-
-      <div style={{ position: "relative", maxWidth: 700 }}>
-        <div style={{
-          position: "absolute", left: 12, top: 0, bottom: 0,
-          width: 3, background: "rgba(0,229,255,0.08)", borderRadius: 2, overflow: "hidden",
-        }}>
-          <div style={{
-            width: "100%", height: `${scrollProgress * 100}%`,
-            background: "linear-gradient(180deg, #00E5FF 0%, #7C3AED 100%)",
-            transition: "height 0.15s ease-out",
-          }} />
+    <section
+      id="abyss"
+      ref={revealRef}
+      className="abyss-section-contain"
+      style={{
+        padding: "140px clamp(24px, 6vw, 96px)",
+        position: "relative",
+        zIndex: 2,
+        maxWidth: 1200,
+        margin: "0 auto",
+        ...revealStyle,
+      }}
+    >
+      <div style={{ marginBottom: 64 }}>
+        <div
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.24em",
+            color: "#8CD0E3",
+            marginBottom: 14,
+          }}
+        >
+          ZONE D // 1,850m BATHYPELAGIC TRENCH — TRAJECTORY & DEEP AMBITIONS
         </div>
+        <h2
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(36px, 5.5vw, 68px)",
+            fontWeight: 500,
+            color: "#F4F8FA",
+            lineHeight: 1.05,
+            marginBottom: 18,
+          }}
+        >
+          A path built from curiosity, not checklists.
+        </h2>
+        <p
+          style={{
+            color: "#C4D4E0",
+            fontSize: 16,
+            lineHeight: 1.7,
+            maxWidth: 660,
+          }}
+        >
+          In the quiet of the deep water column, each milestone marks a shift in
+          how I approach computing — from foundational algorithms at Rayat Bahra
+          University to shipping AI systems and exploring full-stack automation.
+        </p>
+      </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {CAREER_PATH.map((item, i) => (
-            <PathCard key={i} item={item} index={i} />
+      <div
+        ref={timelineRef}
+        style={{
+          position: "relative",
+          marginLeft: 14,
+          paddingLeft: "clamp(24px, 4vw, 48px)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 36,
+        }}
+      >
+        {/* 3. Static Dim Background Line */}
+        <div 
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 1,
+            background: "rgba(104, 176, 198, 0.28)",
+          }} 
+        />
+
+        {/* 4. Animated Glowing Line */}
+        <div 
+          ref={glowLineRef}
+          style={{
+            position: "absolute",
+            left: -1, // Shifted slightly left to center it over the 1px base line
+            top: 0,
+            width: 3,
+            background: "#68B0C6",
+            boxShadow: "0 0 14px #68B0C6, 0 0 24px #9CE0F2",
+            height: "0%", 
+            transition: "height 0.15s ease-out", 
+            zIndex: 1,
+            borderRadius: "4px"
+          }} 
+        />
+
+        {MILESTONES.map((m) => {
+          const isFuture = m.year === "Future Horizon";
+          return (
+            <div
+              key={m.year}
+              style={{
+                position: "relative",
+                background: isFuture
+                  ? "rgba(8, 25, 40, 0.76)"
+                  : "rgba(3, 11, 20, 0.72)",
+                border: isFuture
+                  ? "1px dashed rgba(217, 167, 106, 0.5)"
+                  : "1px solid rgba(180, 198, 212, 0.14)",
+                borderRadius: 18,
+                padding: "28px 30px",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  left: "calc(-1 * clamp(24px, 4vw, 48px) - 6px)",
+                  top: 34,
+                  width: 11,
+                  height: 11,
+                  borderRadius: "50%",
+                  background: isFuture ? "#D9A76A" : "#68B0C6",
+                  boxShadow: isFuture
+                    ? "0 0 12px rgba(217, 167, 106, 0.8)"
+                    : "0 0 10px rgba(104, 176, 198, 0.6)",
+                  zIndex: 2, // Keeps the dots above the glowing line
+                }}
+              />
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 10,
+                  marginBottom: 10,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.18em",
+                    color: isFuture ? "#E6B87C" : "#8CD0E3",
+                  }}
+                >
+                  {m.year.toUpperCase()} // DEPTH {m.depth}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 10.5,
+                    color: "#8CA3B5",
+                    letterSpacing: "0.1em",
+                  }}
+                >
+                  {m.type.toUpperCase()}
+                </span>
+              </div>
+
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontSize: 28,
+                  fontWeight: 600,
+                  color: "#F4F8FA",
+                  marginBottom: 4,
+                }}
+              >
+                {m.title}
+              </h3>
+
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 11.5,
+                  color: "#8CA3B5",
+                  marginBottom: 12,
+                }}
+              >
+                {m.org}
+              </div>
+
+              <p
+                style={{
+                  color: "#D6E3EC",
+                  fontSize: 14.5,
+                  lineHeight: 1.66,
+                }}
+              >
+                {m.desc}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Career Path subsection ── */}
+      <div style={{ marginTop: 80 }}>
+        <div
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.22em",
+            color: "#8CD0E3",
+            marginBottom: 14,
+          }}
+        >
+          EXPEDITION LOG — CAREER PATH
+        </div>
+        <h3
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(28px, 4vw, 48px)",
+            fontWeight: 500,
+            color: "#F4F8FA",
+            lineHeight: 1.1,
+            marginBottom: 36,
+          }}
+        >
+          Energy cables between the milestones.
+        </h3>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
+            gap: 20,
+          }}
+        >
+          {CAREER_PATH.map((cp, i) => (
+            <div
+              key={i}
+              style={{
+                background: "rgba(3, 11, 20, 0.72)",
+                border: "1px solid rgba(180, 198, 212, 0.14)",
+                borderRadius: 16,
+                padding: "24px 26px",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  color: "#8CD0E3",
+                  marginBottom: 10,
+                }}
+              >
+                {cp.period}
+              </div>
+              <h4
+                style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontSize: 20,
+                  fontWeight: 600,
+                  color: "#F4F8FA",
+                  marginBottom: 4,
+                }}
+              >
+                {cp.title}
+              </h4>
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 11,
+                  color: "#8CA3B5",
+                  marginBottom: 10,
+                }}
+              >
+                {cp.org}
+              </div>
+              <p style={{ color: "#C4D4E0", fontSize: 13.5, lineHeight: 1.6 }}>
+                {cp.desc}
+              </p>
+            </div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function PathCard({ item, index }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.2 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
+// ============================================================================
+// ZONE E — THE LIGHTHOUSE (RESUME DOSSIER, SIGNAL TRANSMISSION & TELEMETRY)
+// ============================================================================
+export function LighthouseZone() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [dispatched, setDispatched] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
 
-  return (
-    <div ref={ref} style={{
-      display: "flex", gap: 24, alignItems: "flex-start",
-      opacity: visible ? 1 : 0,
-      transform: visible ? "none" : "translateX(-24px)",
-      transition: `all 0.6s ease ${index * 0.12}s`,
-    }}>
-      <div style={{ flexShrink: 0, width: 26, display: "flex", justifyContent: "center", paddingTop: 22 }}>
-        <div style={{
-          width: 10, height: 10, borderRadius: "50%",
-          background: "#2DD4BF", boxShadow: "0 0 12px #2DD4BF",
-          border: "2px solid #050812",
-        }} />
-      </div>
-      <div style={{
-        flex: 1, background: "rgba(15,23,42,0.65)", backdropFilter: "blur(12px)",
-        border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14,
-        padding: "20px 20px", boxShadow: "0 4px 30px rgba(0,0,0,0.25)",
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6, flexWrap: "wrap", gap: 8 }}>
-          <span style={{ fontFamily: "'Space Grotesk'", fontSize: 17, fontWeight: 700, color: "#F8FAFC" }}>{item.title}</span>
-          <span style={{ color: "#2DD4BF", fontSize: 12, fontFamily: "'JetBrains Mono'", letterSpacing: "0.05em" }}>{item.period}</span>
-        </div>
-        <div style={{ color: "#64748B", fontSize: 13, marginBottom: 10, fontStyle: "italic" }}>{item.org}</div>
-        <div style={{ color: "#94A3B8", fontSize: 14, lineHeight: 1.65 }}>{item.desc}</div>
-      </div>
-    </div>
-  );
-}
+  const [cmdInput, setCmdInput] = useState("");
+  const [cmdLog, setCmdLog] = useState([
+    {
+      type: "sys",
+      text: "ABYSS HYDROGRAPHIC CONSOLE // Type 'help' for available queries.",
+    },
+  ]);
 
-// ============================================================
-// SIGNAL (CONTACT) SECTION — enhanced with visual contact card
-// ============================================================
-
-// Star field used inside the contact section background
-function ContactStarField() {
-  const stars = Array.from({ length: 60 }, (_, i) => ({
-    id: i,
-    top: `${Math.random() * 100}%`,
-    left: `${Math.random() * 100}%`,
-    size: Math.random() * 2 + 0.5,
-    opacity: Math.random() * 0.5 + 0.15,
-    animDelay: `${Math.random() * 4}s`,
-  }));
-  return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
-      {stars.map((s) => (
-        <div key={s.id} style={{
-          position: "absolute", top: s.top, left: s.left,
-          width: s.size, height: s.size, borderRadius: "50%",
-          background: "#00E5FF", opacity: s.opacity,
-          animation: `contactTwinkle 3s ${s.animDelay} infinite alternate ease-in-out`,
-        }} />
-      ))}
-    </div>
-  );
-}
-
-// Contact info row
-function ContactInfoItem({ icon, label, value }) {
-  return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 }}>
-      <div style={{
-        width: 38, height: 38, borderRadius: 8,
-        background: "rgba(0,229,255,0.1)", border: "1px solid rgba(0,229,255,0.2)",
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2,
-      }}>
-        <span style={{ fontSize: 16 }}>{icon}</span>
-      </div>
-      <div>
-        <div style={{ color: "#F8FAFC", fontWeight: 600, fontSize: 15, marginBottom: 2, fontFamily: "'Space Grotesk'" }}>{label}</div>
-        <div style={{ color: "#64748B", fontSize: 14, fontFamily: "'Inter'" }}>{value}</div>
-      </div>
-    </div>
-  );
-}
-
-const TERMINAL_COMMANDS = {
-  help: () => "Commands: about · skills · email · github · linkedin · clear",
-  about: () => "Karanveer Singh — B.Tech CSE @ Rayat Bahra University. Building AI products and data systems.",
-  skills: () => "Python · Pandas · NumPy · Matplotlib · Streamlit · Groq API · Sarvam AI · Git · SQL",
-  email: () => `Email: ${PROFILE.email}`,
-  github: () => { window.open(PROFILE.github, "_blank"); return "Opening GitHub..."; },
-  linkedin: () => { window.open(PROFILE.linkedin, "_blank"); return "Opening LinkedIn..."; },
-  clear: () => "__CLEAR__",
-};
-
-function Terminal() {
-  const [input, setInput] = useState("");
-  const [history, setHistory] = useState([{ type: "system", text: "Welcome. Type 'help' to see commands." }]);
-  const endRef = useRef(null);
-
-  useEffect(() => {
-    if (history.length > 1) endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [history]);
-
-  const run = () => {
-    const cmd = input.trim().toLowerCase();
-    if (!cmd) return;
-    const handler = TERMINAL_COMMANDS[cmd];
-    const result = handler ? handler() : `Command not found: '${cmd}'.`;
-    if (result === "__CLEAR__") {
-      setHistory([{ type: "system", text: "Terminal cleared." }]);
-    } else {
-      setHistory(h => [...h, { type: "input", text: cmd }, { type: "output", text: result }]);
-    }
-    setInput("");
-  };
-
-  return (
-    <div style={{
-      background: "rgba(0,0,0,0.6)", border: "1px solid rgba(0,229,255,0.2)",
-      borderRadius: 16, padding: 20, fontFamily: "'JetBrains Mono'", fontSize: 13,
-      height: 280, display: "flex", flexDirection: "column", overflow: "hidden",
-    }}>
-      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-        {["#ff5f57", "#febc2e", "#28c840"].map((c, i) => (
-          <div key={i} style={{ width: 12, height: 12, borderRadius: "50%", background: c }} />
-        ))}
-      </div>
-      <div style={{ flex: 1, overflow: "auto", marginBottom: 12 }}>
-        {history.map((h, i) => (
-          <div key={i} style={{ marginBottom: 6, color: h.type === "input" ? "#00E5FF" : h.type === "system" ? "#F8FAFC88" : "#00FFC6", wordBreak: "break-word" }}>
-            {h.type === "input" ? `> ${h.text}` : h.text}
-          </div>
-        ))}
-        <div ref={endRef} />
-      </div>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <span style={{ color: "#00E5FF" }}>›</span>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && run()}
-          placeholder="Type a command..."
-          style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#F8FAFC", fontFamily: "'JetBrains Mono'", fontSize: 13, minWidth: 0 }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function SignalSection() {
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
-  const [sent, setSent] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 900);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = () => {
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
     if (!form.name || !form.email || !form.message) return;
-    // Fall back to mailto so it actually works without a backend
-    const sub  = encodeURIComponent(form.subject || "Portfolio Contact");
-    const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`);
+    const sub = encodeURIComponent(
+      form.subject || "Portfolio Inquiry — Project Abyss"
+    );
+    const body = encodeURIComponent(
+      `Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`
+    );
     window.location.href = `mailto:${PROFILE.email}?subject=${sub}&body=${body}`;
-    setSent(true);
-    setTimeout(() => setSent(false), 3000);
+    setDispatched(true);
+    setTimeout(() => setDispatched(false), 3500);
     setForm({ name: "", email: "", subject: "", message: "" });
   };
 
-  const inputStyle = {
-    width: "100%", background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(0,229,255,0.15)", borderRadius: 10,
-    padding: "11px 14px", color: "#F8FAFC", fontSize: 14,
-    outline: "none", boxSizing: "border-box",
-    fontFamily: "'Inter', sans-serif", transition: "border-color 0.2s",
+  const copyEmail = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(PROFILE.email);
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2500);
+    }
   };
 
-  const SOCIAL = [
-    { icon: "⌥", label: "GitHub",    href: PROFILE.github },
-    { icon: "in", label: "LinkedIn",  href: PROFILE.linkedin },
-    { icon: "@",  label: "Email",     href: `mailto:${PROFILE.email}` },
-  ];
+  const executeConsoleCommand = (e) => {
+    e.preventDefault();
+    const raw = cmdInput.trim().toLowerCase();
+    if (!raw) return;
 
-  return (
-    <>
-      <style>{`
-        @keyframes contactTwinkle { from { opacity: 0.15; } to { opacity: 0.7; } }
-        @keyframes contactFloatBtn { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        .signal-input:focus { border-color: #00E5FF !important; }
-        .signal-input::placeholder { color: #334d66; }
-        .signal-social:hover { background: rgba(0,229,255,0.18) !important; transform: translateY(-3px); }
-        .signal-send:hover { box-shadow: 0 6px 28px rgba(0,229,255,0.35) !important; }
-      `}</style>
+    const responses = {
+      help: "Available queries: about · skills · projects · certificates · contact · github · linkedin · clear",
+      about: `${PROFILE.name} — ${PROFILE.degree} at ${PROFILE.university}. Based in ${PROFILE.location}.`,
+      skills:
+        "Core: Python, Pandas, NumPy, Matplotlib, Streamlit, Groq API, Sarvam AI API, Supabase, SQL, Git, VS Code | Learning: React, FastAPI.",
+      projects:
+        "1. BrainBlitz (AI Quiz Platform: streamlit.app) | 2. Studora (College Analytics Platform: studoraacademia.streamlit.app)",
+      certificates:
+        "1. Infosys Backend Python (Apr 2026) | 2. ICISFT Research Paper (Mar 2026) | 3. Simplilearn Prompt Engineering (Jul 2026)",
+      contact: `Email: ${PROFILE.email} | Phone: ${PROFILE.phone} | Location: ${PROFILE.location}`,
+      github: "Opening GitHub profile (https://github.com/karanveernov-png)...",
+      linkedin:
+        "Opening LinkedIn profile (https://www.linkedin.com/in/karanveer-singh-0562663b5)...",
+    };
 
-      {/* Floating email shortcut */}
-      <a href={`mailto:${PROFILE.email}`} style={{
-        position: "fixed", bottom: 72, right: 16, zIndex: 900,
-        width: 46, height: 46, borderRadius: "50%",
-        background: "linear-gradient(135deg, #00E5FF, #7C3AED)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "0 4px 20px rgba(0,229,255,0.35)",
-        animation: "contactFloatBtn 3s ease-in-out infinite",
-        textDecoration: "none", fontSize: 20,
-      }}>✉</a>
+    if (raw === "clear") {
+      setCmdLog([{ type: "sys", text: "Console log cleared." }]);
+      setCmdInput("");
+      return;
+    }
+    if (raw === "github")
+      window.open(PROFILE.github, "_blank", "noopener,noreferrer");
+    if (raw === "linkedin")
+      window.open(PROFILE.linkedin, "_blank", "noopener,noreferrer");
 
-      <section id="contact" style={{
-        position: "relative", overflow: "hidden",
-        padding: isMobile ? "80px 20px" : "100px 20px",
-      }}>
-        <ContactStarField />
-
-        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-          <SectionMeta index="07" label="SIGNAL" />
-          <SectionHeading>Let's Connect</SectionHeading>
-          <SectionSub>Open to opportunities in data analytics, full-stack development, and AI engineering.</SectionSub>
-
-          <div style={{ display: "flex", gap: isMobile ? 40 : 60, flexWrap: "wrap", alignItems: "flex-start" }}>
-
-            {/* ── Left: contact info + terminal ── */}
-<div style={{ flex: "1 1 320px", minWidth: 260 }}>
-
-  {/* Badge */}
-  <div style={{
-    display: "inline-block", border: "1px solid rgba(0,229,255,0.25)",
-    borderRadius: 6, padding: "5px 14px",
-    color: "#00E5FF88", fontSize: 11, fontWeight: 600,
-    letterSpacing: "2px", textTransform: "uppercase",
-    marginBottom: 28, fontFamily: "'JetBrains Mono'",
-  }}>GET IN TOUCH</div>
-
-  <ContactInfoItem icon="📧" label="Email"        value={PROFILE.email} />
-  <ContactInfoItem icon="📞" label="Phone"        value={PROFILE.phone} />
-  <ContactInfoItem icon="📌" label="Location"     value="Rupnagar,Punjab, India" />
-  <ContactInfoItem icon="⚡" label="Availability" value="Open to internships, freelance & collaborations" />
-
-  {/* Terminal */}
-  <div style={{ marginTop: 28 }}>
-    <div style={{ color: "#F8FAFC44", fontSize: 11, letterSpacing: "0.2em", marginBottom: 10, fontFamily: "'JetBrains Mono'" }}>
-      TERMINAL — try &apos;help&apos;
-    </div>
-    <Terminal />
-  </div>
-</div>
-
-            {/* ── Right: contact form card ── */}
-            <div style={{
-              flex: "1 1 320px", minWidth: 300,
-              background: "rgba(10,18,40,0.85)",
-              border: "1px solid rgba(0,229,255,0.12)",
-              borderRadius: 20, padding: "30px 26px",
-              backdropFilter: "blur(12px)",
-              boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
-            }}>
-              {/* Accent dot */}
-              <div style={{
-                width: 10, height: 10, borderRadius: "50%",
-                background: "#00E5FF", marginLeft: "auto", marginBottom: 20,
-                boxShadow: "0 0 10px #00E5FF",
-              }} />
-
-              {[
-                { id: "name",    label: "Your Name",  type: "text",  placeholder: "Enter your name"  },
-                { id: "email",   label: "Your Email", type: "email", placeholder: "Enter your email" },
-                { id: "subject", label: "Subject",    type: "text",  placeholder: "What's this about?" },
-              ].map(f => (
-                <div key={f.id} style={{ marginBottom: 16 }}>
-                  <label style={{ display: "block", color: "#F8FAFC88", fontSize: 12, fontWeight: 600, marginBottom: 6, fontFamily: "'JetBrains Mono'" }}>
-                    {f.label}
-                  </label>
-                  <input className="signal-input" style={inputStyle}
-                    type={f.type} name={f.id} value={form[f.id]}
-                    onChange={handleChange} placeholder={f.placeholder}
-                  />
-                </div>
-              ))}
-
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ display: "block", color: "#F8FAFC88", fontSize: 12, fontWeight: 600, marginBottom: 6, fontFamily: "'JetBrains Mono'" }}>
-                  Message
-                </label>
-                <textarea className="signal-input"
-                  style={{ ...inputStyle, resize: "vertical", minHeight: 110 }}
-                  name="message" value={form.message}
-                  onChange={handleChange} placeholder="Tell me about your project..."
-                />
-              </div>
-
-              <button className="signal-send" onClick={handleSubmit} style={{
-                width: "100%", padding: "13px",
-                background: sent
-                  ? "linear-gradient(90deg, #059669, #10b981)"
-                  : "linear-gradient(135deg, #00E5FF, #7C3AED)",
-                border: "none", borderRadius: 12,
-                color: sent ? "#fff" : "#050812",
-                fontSize: 14, fontWeight: 700,
-                cursor: "pointer", display: "flex", alignItems: "center",
-                justifyContent: "center", gap: 8,
-                transition: "all 0.25s",
-                boxShadow: "0 4px 18px rgba(0,229,255,0.25)",
-                fontFamily: "'Inter', sans-serif",
-              }}>
-                {sent ? "Opening Email Client ✓" : "Send Message →"}
-              </button>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div style={{
-            height: 1, background: "linear-gradient(90deg, transparent, rgba(0,229,255,0.2), transparent)",
-            margin: "60px 0 40px",
-          }} />
-
-          {/* Social links */}
-          <div>
-            <p style={{ color: "#F8FAFC44", fontSize: 11, fontWeight: 600,
-              letterSpacing: "1px", marginBottom: 16, textTransform: "uppercase",
-              fontFamily: "'JetBrains Mono'" }}>
-              Let&apos;s connect
-            </p>
-            <div style={{ display: "flex", gap: 12 }}>
-              {SOCIAL.map(({ icon, label, href }) => (
-                <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                  className="signal-social" title={label}
-                  style={{
-                    width: 44, height: 44, borderRadius: "50%",
-                    border: "1px solid rgba(0,229,255,0.2)",
-                    background: "rgba(0,229,255,0.06)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    transition: "all 0.25s", textDecoration: "none",
-                    color: "#00E5FF", fontSize: 14, fontFamily: "'JetBrains Mono'",
-                    fontWeight: 700,
-                  }}>
-                  {icon}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
-  );
-}
-
-// ============================================================
-// UPLINK — Resume section
-// ============================================================
-function UplinkSection() {
-  const [downloadState, setDownloadState] = useState("idle");
-  const [isMobile, setIsMobile] = useState(false);
-  const labels = { idle: "Download Resume", preparing: "Preparing...", ready: "Resume Ready ↓", done: "✓ Done" };
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const handleDownload = () => {
-    setDownloadState("preparing");
-    setTimeout(() => setDownloadState("ready"), 800);
-    setTimeout(() => setDownloadState("done"), 1600);
-    setTimeout(() => setDownloadState("idle"), 3000);
+    const reply =
+      responses[raw] ||
+      `Unrecognized query '${raw}'. Type 'help' to list valid commands.`;
+    setCmdLog((prev) => [
+      ...prev,
+      { type: "in", text: `› ${raw}` },
+      { type: "out", text: reply },
+    ]);
+    setCmdInput("");
   };
 
-  return (
-    <div id="uplink" style={{ padding: "80px 20px", maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-      <SectionMeta index="06" label="UPLINK" />
-      <SectionHeading>Download My Resume</SectionHeading>
-      <SectionSub>A snapshot of my technical journey — data analytics, full-stack, and AI-powered applications.</SectionSub>
+  const [revealRef, revealStyle] = useReveal();
 
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 40, alignItems: "center" }}>
-        <div style={{
-          background: "rgba(255,255,255,0.02)", border: "1px solid rgba(0,229,255,0.15)",
-          borderRadius: 20, overflow: "hidden", aspectRatio: "8/11",
-          position: "relative", display: "flex",
-        }}>
-          <img src="/resume-thumbnail.png" alt="Resume Preview" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", opacity: 0.85 }}
-            onMouseOver={e => e.currentTarget.style.opacity = "1"}
-            onMouseOut={e => e.currentTarget.style.opacity = "0.85"}
-          />
-          <div style={{
-            position: "absolute", top: 0, left: 0, right: 0, height: "2px",
-            background: "linear-gradient(90deg, transparent, #00E5FF, transparent)",
-            animation: "scanLine 3s linear infinite", zIndex: 10,
-          }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(0,229,255,0.05), rgba(124,58,237,0.05))", pointerEvents: "none" }} />
+  return (
+    <section
+      id="lighthouse"
+      ref={revealRef}
+      className="abyss-section-contain"
+      style={{
+        padding: "140px clamp(24px, 6vw, 96px) 80px",
+        position: "relative",
+        zIndex: 2,
+        maxWidth: 1320,
+        margin: "0 auto",
+        ...revealStyle,
+      }}
+    >
+      <div style={{ marginBottom: 56 }}>
+        <div
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.24em",
+            color: "#E6B87C",
+            marginBottom: 14,
+          }}
+        >
+          ZONE E // NOCTURNAL HORIZON — THE LIGHTHOUSE & EXPEDITION DOSSIER
+        </div>
+        <h2
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(38px, 5.5vw, 72px)",
+            fontWeight: 500,
+            color: "#F4F8FA",
+            lineHeight: 1.04,
+            marginBottom: 18,
+          }}
+        >
+          A clear signal across the horizon.
+        </h2>
+        <p
+          style={{
+            color: "#D6E3EC",
+            fontSize: 16,
+            lineHeight: 1.68,
+            maxWidth: 680,
+          }}
+        >
+          {PROFILE.availability}. Access my full resume dossier or transmit a
+          direct message below.
+        </p>
+      </div>
+
+      {/* Resume Dossier Banner */}
+      <div
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(16, 36, 52, 0.82) 0%, rgba(5, 16, 28, 0.90) 100%)",
+          border: "1px solid rgba(217, 167, 106, 0.38)",
+          borderRadius: 22,
+          padding: "clamp(24px, 4vw, 40px)",
+          marginBottom: 48,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 24,
+          backdropFilter: "blur(14px)",
+        }}
+      >
+        <div style={{ maxWidth: 640 }}>
+          <div
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 10.5,
+              letterSpacing: "0.2em",
+              color: "#E6B87C",
+              marginBottom: 8,
+            }}
+          >
+            EXPEDITION UPLINK // CURRICULUM VITAE
+          </div>
+          <h3
+            style={{
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontSize: 34,
+              color: "#F4F8FA",
+              marginBottom: 8,
+            }}
+          >
+            Karanveer Singh — Engineering Resume
+          </h3>
+          <p style={{ color: "#C4D4E0", fontSize: 14.5, lineHeight: 1.6 }}>
+            Complete academic record at Rayat Bahra University (B.Tech CSE),
+            deployed AI & data systems (BrainBlitz, Studora), conference research
+            publication (ICISFT 2026), and verified technical certifications.
+          </p>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <button onClick={() => window.open("/resume.pdf", "_blank")} style={{
-            display: "block", width: "100%", textAlign: "center",
-            background: "linear-gradient(135deg, #00E5FF, #7C3AED)",
-            border: "none", borderRadius: 12, padding: "14px 28px",
-            color: "#050816", fontSize: 14, fontWeight: 700, cursor: "pointer",
-            fontFamily: "'Inter'", textDecoration: "none",
-            boxShadow: "0 0 20px rgba(0,229,255,0.2)",
-          }}>View Resume</button>
-
-          <a href="/resume.pdf" download="Karanveer_Singh_Resume.pdf" onClick={handleDownload} style={{
-            display: "block", textAlign: "center",
-            background: downloadState === "done" ? "rgba(0,255,198,0.1)" : "rgba(0,229,255,0.08)",
-            border: `1px solid ${downloadState === "done" ? "rgba(0,255,198,0.3)" : "rgba(0,229,255,0.3)"}`,
-            borderRadius: 12, padding: "14px 28px",
-            color: downloadState === "done" ? "#00FFC6" : "#00E5FF",
-            fontSize: 14, fontWeight: 600, cursor: "pointer",
-            fontFamily: "'Inter'", textDecoration: "none", transition: "all 0.3s",
-          }}>{labels[downloadState]}</a>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          <a
+            href={PROFILE.resumePdf}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              background: "#E6B87C",
+              color: "#04101A",
+              padding: "14px 26px",
+              borderRadius: 100,
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 13.5,
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            View Resume PDF ↗
+          </a>
+          <a
+            href={PROFILE.resumePdf}
+            download={PROFILE.resumeDownloadName}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(230, 184, 124, 0.4)",
+              color: "#F4F8FA",
+              padding: "14px 24px",
+              borderRadius: 100,
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 12,
+              textDecoration: "none",
+            }}
+          >
+            Download ↓
+          </a>
         </div>
       </div>
-      <style>{`@keyframes scanLine { 0% { transform: translateY(0); opacity: 1; } 80% { opacity: 0.5; } 100% { transform: translateY(100vh); opacity: 0; } }`}</style>
-    </div>
+
+      {/* Two-Column Contact & Telemetry Layout */}
+      <div
+        className="abyss-contact-grid"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.1fr)",
+          gap: 36,
+          alignItems: "start",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div
+            style={{
+              background: "rgba(4, 15, 26, 0.76)",
+              border: "1px solid rgba(180, 198, 212, 0.16)",
+              borderRadius: 20,
+              padding: "28px 26px",
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10.5,
+                letterSpacing: "0.2em",
+                color: "#8CD0E3",
+                marginBottom: 20,
+              }}
+            >
+              DIRECT TRANSMISSION CHANNELS
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <div>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 10,
+                    color: "#8CA3B5",
+                    marginBottom: 4,
+                  }}
+                >
+                  ELECTRONIC MAIL
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <a
+                    href={`mailto:${PROFILE.email}`}
+                    style={{
+                      color: "#F4F8FA",
+                      fontSize: 15,
+                      fontWeight: 500,
+                      textDecoration: "none",
+                    }}
+                  >
+                    {PROFILE.email}
+                  </a>
+                  <button
+                    onClick={copyEmail}
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(180,198,212,0.2)",
+                      borderRadius: 6,
+                      padding: "3px 8px",
+                      color: copiedEmail ? "#7CE0B8" : "#B4C6D4",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: 10,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {copiedEmail ? "COPIED ✓" : "COPY"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 10,
+                    color: "#8CA3B5",
+                    marginBottom: 4,
+                  }}
+                >
+                  TELEPHONE LINE
+                </div>
+                <a
+                  href={`tel:${PROFILE.phone.replace(/\s+/g, "")}`}
+                  style={{
+                    color: "#F4F8FA",
+                    fontSize: 15,
+                    fontWeight: 500,
+                    textDecoration: "none",
+                  }}
+                >
+                  {PROFILE.phone}
+                </a>
+              </div>
+
+              <div>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 10,
+                    color: "#8CA3B5",
+                    marginBottom: 4,
+                  }}
+                >
+                  BASE STATION
+                </div>
+                <div style={{ color: "#F4F8FA", fontSize: 15 }}>
+                  {PROFILE.location} ({PROFILE.coordinates})
+                </div>
+              </div>
+
+              <div
+                style={{
+                  borderTop: "1px solid rgba(180,198,212,0.12)",
+                  paddingTop: 16,
+                  display: "flex",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <a
+                  href={PROFILE.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(180,198,212,0.2)",
+                    borderRadius: 100,
+                    padding: "8px 16px",
+                    color: "#EEF3F6",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 11.5,
+                    textDecoration: "none",
+                  }}
+                >
+                  GitHub // karanveernov-png ↗
+                </a>
+                <a
+                  href={PROFILE.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(180,198,212,0.2)",
+                    borderRadius: 100,
+                    padding: "8px 16px",
+                    color: "#EEF3F6",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 11.5,
+                    textDecoration: "none",
+                  }}
+                >
+                  LinkedIn Profile ↗
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: "rgba(2, 9, 16, 0.84)",
+              border: "1px solid rgba(180, 198, 212, 0.16)",
+              borderRadius: 20,
+              padding: "22px 24px",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                color: "#8CA3B5",
+                marginBottom: 12,
+              }}
+            >
+              INTERACTIVE TELEMETRY QUERY CONSOLE (TRY: help, skills, projects)
+            </div>
+            <div
+              style={{
+                maxHeight: 150,
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                marginBottom: 12,
+                fontSize: 12,
+              }}
+            >
+              {cmdLog.map((entry, i) => (
+                <div
+                  key={i}
+                  style={{
+                    color:
+                      entry.type === "in"
+                        ? "#E6B87C"
+                        : entry.type === "sys"
+                        ? "#8CA3B5"
+                        : "#D6E3EC",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {entry.text}
+                </div>
+              ))}
+            </div>
+            <form
+              onSubmit={executeConsoleCommand}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                borderTop: "1px solid rgba(180, 198, 212, 0.12)",
+                paddingTop: 10,
+              }}
+            >
+              <span style={{ color: "#E6B87C", fontSize: 13 }}>›</span>
+              <input
+                type="text"
+                value={cmdInput}
+                onChange={(e) => setCmdInput(e.target.value)}
+                placeholder="Query station log (e.g. 'skills' or 'projects')..."
+                aria-label="Telemetry console command input"
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "#EEF3F6",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 12,
+                }}
+              />
+            </form>
+          </div>
+        </div>
+
+        {/* Right: Direct Signal Dispatch Form */}
+        <form
+          onSubmit={handleFormSubmit}
+          style={{
+            background: "rgba(4, 15, 26, 0.80)",
+            border: "1px solid rgba(180, 198, 212, 0.18)",
+            borderRadius: 22,
+            padding: "32px 30px",
+            backdropFilter: "blur(14px)",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 10.5,
+              letterSpacing: "0.2em",
+              color: "#E6B87C",
+              marginBottom: 20,
+            }}
+          >
+            COMPOSE DIRECT TRANSMISSION
+          </div>
+
+          {[
+            {
+              id: "name",
+              label: "Your Name",
+              type: "text",
+              placeholder: "Enter your name",
+              required: true,
+            },
+            {
+              id: "email",
+              label: "Your Email",
+              type: "email",
+              placeholder: "name@organization.com",
+              required: true,
+            },
+            {
+              id: "subject",
+              label: "Subject",
+              type: "text",
+              placeholder: "Internship / Collaboration / Project Inquiry",
+              required: false,
+            },
+          ].map((field) => (
+            <div key={field.id} style={{ marginBottom: 18 }}>
+              <label
+                htmlFor={`abyss-${field.id}`}
+                style={{
+                  display: "block",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 11,
+                  color: "#C4D4E0",
+                  marginBottom: 6,
+                }}
+              >
+                {field.label}
+              </label>
+              <input
+                id={`abyss-${field.id}`}
+                type={field.type}
+                required={field.required}
+                value={form[field.id]}
+                onChange={(e) => setForm({ ...form, [field.id]: e.target.value })}
+                placeholder={field.placeholder}
+                style={{
+                  width: "100%",
+                  background: "rgba(2, 9, 16, 0.65)",
+                  border: "1px solid rgba(180, 198, 212, 0.22)",
+                  borderRadius: 10,
+                  padding: "12px 14px",
+                  color: "#F4F8FA",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 14,
+                  outline: "none",
+                }}
+              />
+            </div>
+          ))}
+
+          <div style={{ marginBottom: 22 }}>
+            <label
+              htmlFor="abyss-message"
+              style={{
+                display: "block",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 11,
+                color: "#C4D4E0",
+                marginBottom: 6,
+              }}
+            >
+              Message
+            </label>
+            <textarea
+              id="abyss-message"
+              required
+              rows={4}
+              value={form.message}
+              onChange={(e) => setForm({ ...form, message: e.target.value })}
+              placeholder="Tell me about your team, role, or engineering challenge..."
+              style={{
+                width: "100%",
+                background: "rgba(2, 9, 16, 0.65)",
+                border: "1px solid rgba(180, 198, 212, 0.22)",
+                borderRadius: 10,
+                padding: "12px 14px",
+                color: "#F4F8FA",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 14,
+                resize: "vertical",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              background: dispatched ? "#2E6F5E" : "#E6B87C",
+              color: dispatched ? "#F4F8FA" : "#04101A",
+              border: "none",
+              borderRadius: 100,
+              padding: "14px 24px",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.25s ease",
+            }}
+          >
+            {dispatched ? "Opening Mail Client ✓" : "Transmit Signal →"}
+          </button>
+        </form>
+      </div>
+
+      <footer
+        style={{
+          marginTop: 96,
+          paddingTop: 28,
+          borderTop: "1px solid rgba(180, 198, 212, 0.14)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 16,
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 11,
+          color: "#8CA3B5",
+        }}
+      >
+        <div>
+          © {new Date().getFullYear()} KARANVEER SINGH · PROJECT ABYSS — EXPLORE BEYOND
+          THE SURFACE
+        </div>
+        <div style={{ display: "flex", gap: 20 }}>
+          <a href="#surface" style={{ color: "#C4D4E0", textDecoration: "none" }}>
+            RETURN TO SURFACE ↑
+          </a>
+          <a
+            href={PROFILE.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#C4D4E0", textDecoration: "none" }}
+          >
+            GITHUB
+          </a>
+          <a
+            href={PROFILE.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#C4D4E0", textDecoration: "none" }}
+          >
+            LINKEDIN
+          </a>
+        </div>
+      </footer>
+    </section>
   );
 }
 
-// ============================================================
-// COMMAND PALETTE
-// ============================================================
-function CommandPalette({ onClose }) {
+// ============================================================================
+// QUICK NAVIGATION PALETTE (CTRL+K)
+// ============================================================================
+export function ExpeditionPalette({ open, onClose }) {
   const [query, setQuery] = useState("");
   const inputRef = useRef(null);
-  const commands = [
-    { label: "Core — Home", action: () => document.getElementById("home")?.scrollIntoView({ behavior: "smooth" }) },
-    { label: "Story — About", action: () => document.getElementById("story")?.scrollIntoView({ behavior: "smooth" }) },
-    { label: "Galaxy — Skills", action: () => document.getElementById("skills")?.scrollIntoView({ behavior: "smooth" }) },
-    { label: "Builds — Projects", action: () => document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" }) },
-    { label: "Achievements — Certificates", action: () => document.getElementById("certificates")?.scrollIntoView({ behavior: "smooth" }) }, // <--- PASTE THIS HERE
-    { label: "Path — Career", action: () => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" }) },
-    { label: "Signal — Contact", action: () => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }) },
-    { label: "Uplink — Resume", action: () => document.getElementById("uplink")?.scrollIntoView({ behavior: "smooth" }) },
-    { label: "Download Resume", action: () => { const a = document.createElement("a"); a.href = "/resume.pdf"; a.download = "Karanveer_Singh_Resume.pdf"; a.click(); } },
-    { label: "Open GitHub", action: () => window.open(PROFILE.github, "_blank") },
-    { label: "Open LinkedIn", action: () => window.open(PROFILE.linkedin, "_blank") },
-  ];
-  const filtered = commands.filter(c => c.label.toLowerCase().includes(query.toLowerCase()));
 
   useEffect(() => {
-    inputRef.current?.focus();
-    const onKey = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 20);
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const actions = [
+    ...ZONES.map((z) => ({
+      label: `${z.code} — ${z.name} (${z.depthMeters}m)`,
+      run: () =>
+        document.getElementById(z.id)?.scrollIntoView({ behavior: "smooth" }),
+    })),
+    {
+      label: "Launch BrainBlitz (Live Streamlit App)",
+      run: () => window.open(PROJECTS[0].live, "_blank", "noopener,noreferrer"),
+    },
+    {
+      label: "Launch Studora (Live College Analytics App)",
+      run: () => window.open(PROJECTS[1].live, "_blank", "noopener,noreferrer"),
+    },
+    {
+      label: "Open Resume PDF (/resume.pdf)",
+      run: () => window.open(PROFILE.resumePdf, "_blank", "noopener,noreferrer"),
+    },
+    {
+      label: "Open GitHub (karanveernov-png)",
+      run: () => window.open(PROFILE.github, "_blank", "noopener,noreferrer"),
+    },
+    {
+      label: "Open LinkedIn (Karanveer Singh)",
+      run: () => window.open(PROFILE.linkedin, "_blank", "noopener,noreferrer"),
+    },
+  ];
+
+  const filtered = actions.filter((a) =>
+    a.label.toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 8000, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "15vh", animation: "fadeIn 0.15s ease" }} onClick={onClose}>
-      <div style={{ background: "rgba(5,8,18,0.98)", border: "1px solid rgba(0,229,255,0.2)", borderRadius: 20, width: "min(560px,90vw)", overflow: "hidden", animation: "scaleIn 0.2s ease" }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <span style={{ color: "#00E5FF", fontSize: 16 }}>⌘</span>
-          <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} placeholder="Search commands..."
-            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#F8FAFC", fontSize: 15, fontFamily: "'Inter'" }}
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 3000,
+        background: "rgba(1, 6, 12, 0.8)",
+        backdropFilter: "blur(12px)",
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        paddingTop: "14vh",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#04111D",
+          border: "1px solid rgba(180, 198, 212, 0.24)",
+          borderRadius: 18,
+          width: "min(560px, 92vw)",
+          overflow: "hidden",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
+        }}
+      >
+        <div
+          style={{
+            padding: "14px 18px",
+            borderBottom: "1px solid rgba(180, 198, 212, 0.12)",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <span
+            style={{ color: "#8CD0E3", fontFamily: "'JetBrains Mono', monospace" }}
+          >
+            ⌘
+          </span>
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Jump to depth zone, project, or dossier..."
+            style={{
+              flex: 1,
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              color: "#F4F8FA",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 14,
+            }}
           />
-          <span style={{ color: "#F8FAFC33", fontSize: 12 }}>ESC</span>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#8CA3B5",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              cursor: "pointer",
+            }}
+          >
+            ESC
+          </button>
         </div>
-        <div style={{ maxHeight: 300, overflow: "auto" }}>
-          {filtered.map((cmd, i) => (
-            <button key={i} onClick={() => { cmd.action(); onClose(); }}
-              style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "14px 20px", color: "#F8FAFCcc", cursor: "pointer", fontSize: 14, fontFamily: "'Inter'", transition: "background 0.1s" }}
-              onMouseEnter={e => e.target.style.background = "rgba(0,229,255,0.08)"}
-              onMouseLeave={e => e.target.style.background = "none"}>
-              {cmd.label}
+
+        <div style={{ maxHeight: 320, overflowY: "auto" }}>
+          {filtered.map((item, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                item.run();
+                onClose();
+              }}
+              style={{
+                width: "100%",
+                textAlign: "left",
+                background: "transparent",
+                border: "none",
+                borderBottom: "1px solid rgba(180, 198, 212, 0.06)",
+                padding: "13px 18px",
+                color: "#D6E3EC",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 13.5,
+                cursor: "pointer",
+              }}
+            >
+              {item.label}
             </button>
           ))}
         </div>
-        <div style={{ padding: "10px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <span style={{ color: "#F8FAFC22", fontSize: 11, fontFamily: "'JetBrains Mono'" }}>CTRL+K · ESC to close</span>
-        </div>
       </div>
     </div>
   );
 }
 
-// ============================================================
-// FOOTER
-// ============================================================
-function Footer() {
-  return (
-    <footer style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "40px 20px", textAlign: "center", background: "rgba(0,0,0,0.2)" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "'Space Grotesk'", background: "linear-gradient(135deg, #00E5FF, #7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 12 }}>KVS</div>
-        <div style={{ color: "#F8FAFC33", fontSize: 13, marginBottom: 20 }}>Built with React · Designed with care</div>
-        <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
-          {[
-            { label: "GitHub", href: PROFILE.github },
-            { label: "LinkedIn", href: PROFILE.linkedin },
-            { label: "Email", href: `mailto:${PROFILE.email}` },
-          ].map(({ label, href }) => (
-            <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-              style={{ color: "#F8FAFC44", fontSize: 13, textDecoration: "none", transition: "color 0.2s" }}
-              onMouseEnter={e => e.target.style.color = "#00E5FF"}
-              onMouseLeave={e => e.target.style.color = "#F8FAFC44"}>
-              {label}
-            </a>
-          ))}
-        </div>
-        <div style={{ marginTop: 24, color: "#F8FAFC22", fontSize: 11, fontFamily: "'JetBrains Mono'" }}>
-          © 2025 KARANVEER SINGH · PRESS CTRL+K FOR COMMANDS
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-// ============================================================
-// MAIN APP
-// ============================================================
+// ============================================================================
+// MAIN PORTFOLIO APPLICATION
+// ============================================================================
 export default function Portfolio() {
-  const [booting, setBooting] = useState(true);
-  const [visible, setVisible] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeZone, setActiveZone] = useState("surface");
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [openCert, setOpenCert] = useState(null); // <--- ADD THIS STATE HERE
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [introProgress, setIntroProgress] = useState(0.35);
+  const [introComplete, setIntroComplete] = useState(false);
 
-  const handleBootComplete = useCallback(() => {
-    setBooting(false);
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-      setVisible(true);
-    }, 50);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    if (mq.matches) {
+      setIntroProgress(1.0);
+      setIntroComplete(true);
+    }
+    const onChange = (e) => setReducedMotion(e.matches);
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
+    };
+  }, []);
+
+  // Gentle, non-blocking 1.6s horizon light reveal on arrival
+  useEffect(() => {
+    if (introComplete) return;
+    let raf;
+    const start = performance.now();
+    const duration = 1600;
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setIntroProgress(0.35 + eased * 0.65);
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        setIntroComplete(true);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [introComplete]);
+
+  const handleSkipIntro = useCallback(() => {
+    setIntroProgress(1.0);
+    setIntroComplete(true);
+  }, []);
+
+  // Scroll depth (0–1) feeds the shader uniform every frame — cheap, no DOM
+  // measurement, so a plain rAF-throttled scroll listener is the right tool.
+  useEffect(() => {
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const docHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? window.scrollY / docHeight : 0;
+        setScrollProgress(Math.max(0, Math.min(1, progress)));
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  // Active zone (for the nav + depth gauge) is event-driven via
+  // IntersectionObserver instead of a getBoundingClientRect loop over every
+  // section on every scroll frame — no forced layout reads while scrolling.
+  useEffect(() => {
+    const sections = ZONES.map((z) => document.getElementById(z.id)).filter(
+      Boolean
+    );
+    if (!sections.length || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveZone(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-38% 0px -58% 0px", threshold: 0 }
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
-    if (booting) return;
-    const sectionIds = NAV_ITEMS.map(n => n.id);
-    const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.id); });
-    }, { threshold: 0.3 });
-    sections.forEach(s => obs.observe(s));
-    return () => obs.disconnect();
-  }, [booting]);
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); setPaletteOpen(p => !p); }
+    const onKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      } else if (e.key === "Escape") {
+        setPaletteOpen(false);
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        html {
+          scroll-behavior: smooth;
+          background-color: #020910;
+          color: #EEF3F6;
+        }
         body {
-          background: #050812; color: #F8FAFC;
-          font-family: 'Inter', sans-serif; cursor: none; overflow-x: hidden;
-          -webkit-text-size-adjust: 100%;
-          text-size-adjust: 100%;
+          background-color: #020910;
+          color: #EEF3F6;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+          overflow-x: hidden;
+          -webkit-font-smoothing: antialiased;
         }
-        @media (max-width: 768px) {
-          body { cursor: auto; }
-          .desktop-nav { display: none !important; }
-          .mobile-nav-btn { display: flex !important; }
+        ::selection {
+          background: rgba(104, 176, 198, 0.35);
+          color: #FFFFFF;
         }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #050812; }
-        ::-webkit-scrollbar-thumb { background: #00E5FF33; border-radius: 2px; }
-        input, textarea { color-scheme: dark; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95) translateY(-10px); } to { opacity: 1; transform: none; } }
+        :focus-visible {
+          outline: 2px solid #8CD0E3 !important;
+          outline-offset: 3px;
+        }
+        ::-webkit-scrollbar {
+          width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #020810;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: rgba(104, 176, 198, 0.3);
+          border-radius: 3px;
+        }
+        @media (max-width: 980px) {
+          .abyss-desktop-nav,
+          .abyss-depth-gauge,
+          .abyss-cmd-btn {
+            display: none !important;
+          }
+          .abyss-mobile-btn {
+            display: inline-flex !important;
+          }
+          .abyss-capabilities-grid,
+          .abyss-project-grid,
+          .abyss-contact-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 600px) {
+          .abyss-arch-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 480px) {
+          section {
+            padding-left: 18px !important;
+            padding-right: 18px !important;
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+          html { scroll-behavior: auto; }
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+        .abyss-section-contain {
+          contain: layout style;
+          content-visibility: auto;
+          contain-intrinsic-size: 1px 1400px;
         }
       `}</style>
 
-      {booting && <BootSequence onComplete={handleBootComplete} />}
+      <OceanicCanvas
+        scrollProgress={scrollProgress}
+        reducedMotion={reducedMotion}
+        introProgress={introProgress}
+      />
 
-      {!booting && (
-        <div style={{ opacity: visible ? 1 : 0, transition: "opacity 0.6s ease", minHeight: "100vh" }}>
-          <ParticleBackground />
-          <CustomCursor />
-          {/* Hide Navbar completely while Certificate Modal is active */}
-          {!openCert && <Navbar activeSection={activeSection} />}
-
-          <main style={{ position: "relative", zIndex: 1 }}>
-            <Hero />
-            <StorySection />
-            <GalaxySection />
-            <BuildsSection />
-            <CertificatesSection onOpenCert={setOpenCert} /> {/* <--- PASS HANDLER HERE */}
-            <PathSection />
-            <UplinkSection />
-            <SignalSection />
-          </main>
-
-          <Footer />
-
-          {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
-
-          {/* RENDER MODAL AT TOP ROOT LEVEL */}
-          {openCert && <CertificateModal cert={openCert} onClose={() => setOpenCert(null)} />}
-
-          <div style={{
-            position: "fixed", bottom: 20, right: 16, zIndex: 1000,
-            background: "rgba(0,229,255,0.08)", border: "1px solid rgba(0,229,255,0.2)",
-            borderRadius: 8, padding: "6px 12px", fontSize: 11,
-            color: "#00E5FF88", fontFamily: "'JetBrains Mono'", cursor: "pointer",
-          }} onClick={() => setPaletteOpen(true)}>
-            CTRL+K
-          </div>
-        </div>
+      {!reducedMotion && (
+        <OceanParticles scrollProgress={scrollProgress} />
       )}
+
+      <ExpeditionNavigation
+        activeZone={activeZone}
+        scrollProgress={scrollProgress}
+        onOpenPalette={() => setPaletteOpen(true)}
+      />
+
+      <main style={{ position: "relative", zIndex: 2 }}>
+        <SurfaceZone
+          introComplete={introComplete}
+          onSkipIntro={handleSkipIntro}
+        />
+        <OpenOceanCapabilities />
+        <ResearchVesselProjects />
+        <CredentialsArchive onSelectCertificate={setSelectedCertificate} />
+        <AbyssTrajectoryZone />
+        <LighthouseZone />
+      </main>
+
+      <CertificateDossierModal
+        cert={selectedCertificate}
+        onClose={() => setSelectedCertificate(null)}
+      />
+      <ExpeditionPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+      />
     </>
-  );
-}
+  )}
