@@ -56,6 +56,31 @@ export function ExpeditionNavigation({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Lock the background page while the drawer is open — without this,
+  // scrolling to the end of the zone list on a touch device chains into
+  // scrolling the page behind it, which feels broken. Escape closes it,
+  // and growing the viewport past the mobile breakpoint auto-closes it
+  // (e.g. rotating a tablet or resizing a window).
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => e.key === "Escape" && setMobileMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 980) setMobileMenuOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const telemetry = useMemo(() => {
     let depth = 0;
     if (scrollProgress <= 0.74) {
@@ -217,12 +242,17 @@ export function ExpeditionNavigation({
             onClick={() => setMobileMenuOpen((v) => !v)}
             className="abyss-mobile-btn"
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
             style={{
               display: "none",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 44,
+              minWidth: 44,
               background: "rgba(4, 15, 25, 0.75)",
               border: "1px solid rgba(180, 198, 212, 0.22)",
               borderRadius: 100,
-              padding: "7px 14px",
+              padding: "10px 16px",
               color: "#EEF3F6",
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: 11,
@@ -242,10 +272,14 @@ export function ExpeditionNavigation({
             zIndex: 95,
             background: "rgba(2, 8, 15, 0.94)",
             backdropFilter: "blur(16px)",
-            padding: "88px 24px 32px",
+            padding:
+              "calc(env(safe-area-inset-top, 0px) + 88px) 24px calc(env(safe-area-inset-bottom, 0px) + 32px)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
+            gap: 24,
+            overflowY: "auto",
+            overscrollBehavior: "contain",
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -415,8 +449,8 @@ export function SurfaceZone({ introComplete, onSkipIntro }) {
   return (
     <section
       id="surface"
+      className="abyss-hero"
       style={{
-        minHeight: "100vh",
         position: "relative",
         display: "flex",
         flexDirection: "column",
@@ -425,6 +459,15 @@ export function SurfaceZone({ introComplete, onSkipIntro }) {
         zIndex: 2,
       }}
     >
+      <style>{`
+        /* 100vh fallback first, then the small-viewport-height unit where
+           supported — on mobile Safari/Chrome this ignores the address bar
+           so the hero doesn't visually jump as chrome shows/hides on scroll. */
+        .abyss-hero { min-height: 100vh; }
+        @supports (height: 100svh) {
+          .abyss-hero { min-height: 100svh; }
+        }
+      `}</style>
       {/* Top atmospheric coordinate metadata */}
       <div
         style={{
@@ -469,7 +512,8 @@ export function SurfaceZone({ introComplete, onSkipIntro }) {
                 background: "rgba(4, 15, 25, 0.65)",
                 border: "1px solid rgba(238, 243, 246, 0.25)",
                 borderRadius: 100,
-                padding: "4px 12px",
+                padding: "10px 14px",
+                minHeight: 36,
                 color: "#EEF3F6",
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 10,
@@ -623,6 +667,9 @@ export function SurfaceZone({ introComplete, onSkipIntro }) {
             style={{
               color: "#D6E3EC",
               padding: "12px 16px",
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontSize: 13.5,
               textDecoration: "none",
@@ -708,7 +755,7 @@ export function SurfaceZone({ introComplete, onSkipIntro }) {
               fontSize: 11.5,
               textDecoration: "none",
               borderBottom: "1px solid rgba(180,198,212,0.35)",
-              paddingBottom: 2,
+              padding: "8px 0 2px",
             }}
           >
             GITHUB ↗
@@ -723,7 +770,7 @@ export function SurfaceZone({ introComplete, onSkipIntro }) {
               fontSize: 11.5,
               textDecoration: "none",
               borderBottom: "1px solid rgba(180,198,212,0.35)",
-              paddingBottom: 2,
+              padding: "8px 0 2px",
             }}
           >
             LINKEDIN ↗
@@ -736,7 +783,7 @@ export function SurfaceZone({ introComplete, onSkipIntro }) {
               fontSize: 11.5,
               textDecoration: "none",
               borderBottom: "1px solid rgba(180,198,212,0.35)",
-              paddingBottom: 2,
+              padding: "8px 0 2px",
             }}
           >
             EMAIL ↗

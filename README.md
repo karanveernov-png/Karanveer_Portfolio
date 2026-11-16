@@ -1,135 +1,131 @@
-💼 Karanveer's Developer Portfolio
+# Karanveer's Interactive Developer Portfolio
 
-A modern, fast, responsive personal portfolio built with React, Vite, and Tailwind CSS. Designed to highlight full-stack projects, software engineering skills, verifiable certifications, and professional experience with sleek interactive animations and interactive UI components.
+An immersive, ocean-inspired portfolio built with React and Vite. The experience presents projects, skills, credentials, and contact details as a scroll-driven expedition rather than a collection of static pages.
 
-🚀 Live Demo
+## Live Demo
 
-Deployed URL: https://karanveer-singh-portfolio.vercel.app/
+**Production:** https://karanveer-singh-portfolio.vercel.app/
 
+## Experience highlights
 
-🌟 Features
+### Interactive ocean environment
 
-⚡ Blazing Fast Build & Performance: Powered by Vite and React 18 for instantaneous Hot Module Replacement (HMR).
+- Procedural WebGL water, horizon lighting, caustics, depth haze, and abyss color transitions.
+- A visible moving sun with atmospheric bloom, shifting light rays, and a reflective sun track across the surface.
+- A device-pixel-ratio-aware canvas for sharper rendering on high-density screens.
+- A lightweight 2D marine-life layer with fish, jellyfish, rays, bubbles, and distant particles.
+- Pointer parallax and smooth scroll interpolation make the scene respond to the visitor.
+- Click or touch the water to create expanding surface ripples and disturb nearby marine life.
+- Wind-driven micro-ripples and changing foam highlights keep the water active even when the visitor is still.
+- Rendering pauses when the tab is hidden and quality adapts for smaller or lower-power devices.
 
-🎨 Modern Visual Design: Custom background animations, glassmorphism cards, interactive particle/gradient backdrops, and responsive layouts for mobile, tablet, and desktop screens.
+### Scroll-driven portfolio system
 
-📂 Featured Projects Showcase:
+- The page maps scroll progress to expedition depth, atmospheric pressure, temperature, and visual zones.
+- Smooth navigation jumps between Surface, Capabilities, Projects, Credentials, Trajectory, and Lighthouse sections.
+- Sticky navigation updates its depth readout and active zone as the visitor explores.
+- Intro progress can be skipped, making the experience accessible to returning visitors.
 
-Fluxora: Modern web experience platform with high-fidelity UI and smooth interactions.
+### High-interaction content
 
-Studora: Educational / productivity management suite.
+- Skill topology: select or hover a skill to reveal connected technologies and filter by domain.
+- Project schematics with responsive cards, hover elevation, project previews, and live links.
+- Credential archive with certificate dossier modals, keyboard Escape handling, and touch-safe scrolling.
+- Command palette for quickly jumping to zones and running portfolio queries.
+- Lighthouse console with searchable commands, copy-email action, social links, and contact form.
+- Responsive mobile navigation with scroll locking, safe-area spacing, and large touch targets.
 
-BrainBlitz: Interactive quiz & trivia platform built with dynamic state handling.
+### Accessibility and performance
 
-📜 Verified Certifications & Credentials:
+- Honors `prefers-reduced-motion` by reducing or disabling non-essential animation.
+- Uses passive scroll listeners, `requestAnimationFrame`, visibility detection, and lazy section rendering.
+- Keeps modal and mobile-menu focus interactions isolated from the page behind them.
+- Uses semantic buttons, labels, keyboard shortcuts, and readable contrast for primary controls.
 
-Infosys Springboard: Backend Development with Python, APIs, and Database Systems.
+## Featured content
 
-Udemy: Python Programming Zero to Hero Masterclass.
+- **Fluxora** — modern web experience platform.
+- **Studora** — education and productivity management suite.
+- **BrainBlitz** — interactive quiz and trivia platform.
+- Certifications from Infosys Springboard, Udemy, DeepLearning.AI/Vanderbilt, and ICISFT.
+- Downloadable resume and direct LinkedIn, GitHub, and email links.
 
-DeepLearning.AI / Vanderbilt: Prompt Engineering for Generative AI.
+## Technology
 
-ICISFT: International Conference Participation & Technical Paper presentation.
+- React 19
+- Vite
+- WebGL fragment shaders and Canvas 2D
+- Vanilla CSS-in-JSX for the visual system
+- Lucide React, React Icons, Framer Motion, GSAP, and supporting UI utilities
+- ESLint with the flat configuration format
 
-📄 Resume Integration: One-click preview and download of resume.pdf.
+## Project structure
 
-📬 Contact & Social Links: Direct outreach channels via LinkedIn, GitHub, and email.
-
-🛠️ Tech Stack
-
-Frontend & Core
-
-Framework: React 18
-
-Build Tool: Vite
-
-Styling: Tailwind CSS / Vanilla CSS3 modules
-
-Icons: Custom SVG Icon sprite sheet (icons.svg) & Lucide / React Icons
-
-Linting & Code Quality: ESLint with modern flat config (eslint.config.js)
-
-📁 Project Directory Structure
-
+```text
 portfolio/
 ├── public/
-│   ├── brainblitz-preview.png     # BrainBlitz project screenshot
-│   ├── fluxora-preview.png        # Fluxora project screenshot
-│   ├── studora-preview.png        # Studora project screenshot
-│   ├── icisft-cert.png            # Conference certificate preview
-│   ├── infosys-cert.png           # Infosys certificate preview
-│   ├── prompt-engineering-cert.png# Prompt Engineering certificate
-│   ├── Udemy_python.png           # Udemy Python certification preview
-│   ├── icons.svg                  # SVG icons vector sprite
-│   ├── karan.svg                  # Brand avatar / signature icon
-│   └── resume.pdf                 # Downloadable resume
+│   ├── *-preview.png       # Project previews
+│   ├── *-cert.png          # Certificate images
+│   ├── icons.svg           # SVG icon sprite
+│   ├── karan.svg           # Brand mark
+│   └── resume.pdf          # Downloadable resume
 ├── src/
-│   ├── assets/                    # Static branding and hero graphics
-│   ├── Background.jsx             # Animated canvas / gradient backdrop
-│   ├── Navigation.jsx             # Sticky responsive navbar with smooth scroll
-│   ├── data.js                    # Centralized project, skill, and cert data
-│   ├── App.jsx                    # Root portfolio composition
-│   └── main.jsx                   # React DOM entry point
-├── eslint.config.js               # ESLint configuration
-├── index.html                     # HTML5 entry template & metadata
-├── package.json                   # Project dependencies and scripts
-├── vite.config.js                 # Vite bundler configuration
-└── README.md                      # Project documentation
+│   ├── App.jsx             # Portfolio sections and interactive systems
+│   ├── Background.jsx      # WebGL ocean and 2D marine-life layers
+│   ├── Navigation.jsx      # Expedition navigation and reveal helpers
+│   ├── data.js             # Centralized portfolio content
+│   └── main.jsx            # React entry point
+├── index.html
+├── package.json
+├── vite.config.js
+└── README.md
+```
 
+## Run locally
 
-⚙️ Getting Started Locally
+### Requirements
 
-Prerequisites
+- Node.js 18 or newer
+- npm
 
-Node.js (version 18.x or higher recommended)
+### Install and start development
 
-npm (bundled with Node.js) or pnpm / yarn
-
-1. Clone the repository
-
-git clone https://github.com/your-username/portfolio.git
-cd portfolio
-
-
-2. Install dependencies
-
+```bash
+git clone https://github.com/karanveernov-png/Karanveer_Portfolio.git
+cd Karanveer_Portfolio
 npm install
-
-
-3. Start local development server
-
 npm run dev
+```
 
+Open the local URL printed by Vite, normally `http://localhost:5173/`.
 
-Open your browser and navigate to http://localhost:5173/ (or the port specified in your terminal).
+### Validate and build
 
-4. Create production build
-
+```bash
+npm run lint
 npm run build
-
-
-This generates an optimized, minified bundle inside the dist/ folder ready for deployment.
-
-5. Preview production build locally
-
 npm run preview
+```
 
+`npm run build` creates the deployable production bundle in `dist/`. `npm run preview` serves that bundle locally.
 
-🚢 Deployment
+## Deployment
 
-This project can be deployed seamlessly on any modern static hosting service:
+The project is a static Vite application and can be deployed to Vercel, Netlify, GitHub Pages, or any static host.
 
-Vercel: Import your GitHub repo, select framework preset Vite, and deploy.
+| Platform | Build command | Output directory |
+| --- | --- | --- |
+| Vercel | `npm run build` | `dist` |
+| Netlify | `npm run build` | `dist` |
+| GitHub Pages | `npm run build` | `dist` |
 
-Netlify: Set build command to npm run build and publish directory to dist.
+## Customization
 
-GitHub Pages: Build the project and deploy the dist directory via gh-pages or GitHub Actions.
+1. Update portfolio content in `src/data.js`.
+2. Replace preview, certificate, or resume files in `public/`.
+3. Tune the visual and interaction systems in `src/Background.jsx`, `src/Navigation.jsx`, and `src/App.jsx`.
+4. Run `npm run build` before deploying.
 
-🤝 Contributing & Feedback
-
-Contributions, feedback, and suggestions are always welcome!
-Feel free to open an issue or submit a pull request.
-
-📄 License
+## License
 
 This repository is licensed under the MIT License.

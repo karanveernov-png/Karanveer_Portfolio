@@ -180,7 +180,30 @@ export function OpenOceanCapabilities() {
             <span>ACTIVE: {selectedSkill.name.toUpperCase()}</span>
           </div>
 
-          <div style={{ position: "relative", width: "100%", height: 360, margin: "12px 0" }}>
+          <style>{`
+            .abyss-constellation-wrap { overflow: visible; }
+            .abyss-swipe-hint { display: none; }
+            @media (max-width: 680px) {
+              .abyss-constellation-wrap {
+                overflow-x: auto;
+                overscroll-behavior-x: contain;
+                margin: 12px -4px 0;
+                padding: 0 4px;
+              }
+              .abyss-constellation-inner { min-width: 640px; }
+              .abyss-swipe-hint {
+                display: block;
+                text-align: center;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 10px;
+                letter-spacing: 0.14em;
+                color: #8CA3B5;
+                margin-top: 6px;
+              }
+            }
+          `}</style>
+          <div className="abyss-constellation-wrap">
+          <div className="abyss-constellation-inner" style={{ position: "relative", width: "100%", height: 360, margin: "12px 0" }}>
             <svg
               viewBox="0 0 800 360"
               style={{
@@ -289,6 +312,8 @@ export function OpenOceanCapabilities() {
               );
             })}
           </div>
+          </div>
+          <div className="abyss-swipe-hint">← SWIPE TO EXPLORE THE FULL TOPOLOGY →</div>
 
           <div
             style={{
@@ -1319,6 +1344,19 @@ export function CertificateDossierModal({ cert, onClose }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [cert, onClose]);
 
+  // Lock the background page while the modal is open. Without this, on
+  // mobile, dragging past the top/bottom of the modal's own scroll area
+  // "chains" the gesture into the page behind it — a jarring, distinctly
+  // non-native-feeling jump that's one of the most common mobile modal bugs.
+  useEffect(() => {
+    if (!cert) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [cert]);
+
   if (!cert) return null;
 
   return (
@@ -1346,6 +1384,7 @@ export function CertificateDossierModal({ cert, onClose }) {
           width: "100%",
           maxHeight: "90vh",
           overflowY: "auto",
+          overscrollBehavior: "contain",
           padding: "clamp(24px, 4vw, 44px)",
           boxShadow: "0 30px 90px rgba(0,0,0,0.75)",
         }}
@@ -2228,7 +2267,8 @@ export function LighthouseZone() {
                       background: "rgba(255,255,255,0.06)",
                       border: "1px solid rgba(180,198,212,0.2)",
                       borderRadius: 6,
-                      padding: "3px 8px",
+                      padding: "7px 11px",
+                      minHeight: 32,
                       color: copiedEmail ? "#7CE0B8" : "#B4C6D4",
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: 10,
@@ -2350,6 +2390,7 @@ export function LighthouseZone() {
               style={{
                 maxHeight: 150,
                 overflowY: "auto",
+                overscrollBehavior: "contain",
                 display: "flex",
                 flexDirection: "column",
                 gap: 6,
@@ -2398,7 +2439,7 @@ export function LighthouseZone() {
                   outline: "none",
                   color: "#EEF3F6",
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 12,
+                  fontSize: 16,
                 }}
               />
             </form>
@@ -2479,7 +2520,7 @@ export function LighthouseZone() {
                   padding: "12px 14px",
                   color: "#F4F8FA",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 14,
+                  fontSize: 16,
                   outline: "none",
                 }}
               />
@@ -2514,7 +2555,7 @@ export function LighthouseZone() {
                 padding: "12px 14px",
                 color: "#F4F8FA",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 14,
+                fontSize: 16,
                 resize: "vertical",
                 outline: "none",
               }}
@@ -2598,6 +2639,18 @@ export function ExpeditionPalette({ open, onClose }) {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 20);
     }
+  }, [open]);
+
+  // Same background-scroll lock as the certificate modal — prevents the
+  // page behind from scroll-chaining when a touch drag reaches the end of
+  // the results list.
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open]);
 
   if (!open) return null;
@@ -2687,7 +2740,7 @@ export function ExpeditionPalette({ open, onClose }) {
               outline: "none",
               color: "#F4F8FA",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 14,
+              fontSize: 16,
             }}
           />
           <button
@@ -2705,7 +2758,7 @@ export function ExpeditionPalette({ open, onClose }) {
           </button>
         </div>
 
-        <div style={{ maxHeight: 320, overflowY: "auto" }}>
+        <div style={{ maxHeight: 320, overflowY: "auto", overscrollBehavior: "contain" }}>
           {filtered.map((item, i) => (
             <button
               key={i}
@@ -2911,6 +2964,29 @@ export default function Portfolio() {
             padding-right: 18px !important;
           }
         }
+        /* Phones: the 110–140px vertical rhythm tuned for desktop reads as
+           dead space on a small screen, and stacked backdrop-filter blurs
+           are one of the biggest scroll-jank causes on mid/low-tier GPUs —
+           card backgrounds are already opaque enough to read fine without it. */
+        @media (max-width: 680px) {
+          section {
+            padding-top: 72px !important;
+            padding-bottom: 72px !important;
+          }
+          * {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+          }
+        }
+        @media (max-width: 420px) {
+          section {
+            padding-top: 56px !important;
+            padding-bottom: 56px !important;
+          }
+        }
+        input, textarea, button, a {
+          -webkit-tap-highlight-color: transparent;
+        }
         @media (prefers-reduced-motion: reduce) {
           html { scroll-behavior: auto; }
           *, *::before, *::after {
@@ -2922,6 +2998,16 @@ export default function Portfolio() {
           contain: layout style;
           content-visibility: auto;
           contain-intrinsic-size: 1px 1400px;
+        }
+        /* Keeps anchor links / scrollIntoView() from landing a section's
+           heading directly underneath the fixed nav bar. */
+        section[id] {
+          scroll-margin-top: 84px;
+        }
+        @media (max-width: 680px) {
+          section[id] {
+            scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 68px);
+          }
         }
       `}</style>
 

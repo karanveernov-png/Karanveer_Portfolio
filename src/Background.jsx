@@ -26,6 +26,7 @@ const FRAGMENT_SHADER = `
   uniform float u_intro;
   uniform float u_octaves;
   uniform float u_fbmOctaves;
+  uniform vec3 u_ripple;
 
   // ── Noise / Hash primitives ──────────────────────────────────────────────
   float hash(vec2 p) {
@@ -144,6 +145,12 @@ const FRAGMENT_SHADER = `
     vec2 uv = v_uv;
     float aspect = u_resolution.x / max(u_resolution.y, 1.0);
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
+    // A very slow camera drift keeps the scene alive even when the pointer
+    // is still, while the mouse adds a restrained handheld/parallax response.
+    p += vec2(
+      sin(u_time * 0.075) * 0.006 + (u_mouse.x - 0.5) * 0.018,
+      cos(u_time * 0.062) * 0.004 + (u_mouse.y - 0.5) * 0.012
+    );
 
     // ── Zone blending factors ────────────────────────────────────────────
     float submerge     = smoothstep(0.04, 0.14, u_scroll) * (1.0 - smoothstep(0.72, 0.85, u_scroll));
@@ -153,6 +160,8 @@ const FRAGMENT_SHADER = `
     float twilightZone = smoothstep(0.11, 0.18, u_scroll) * (1.0 - smoothstep(0.30, 0.38, u_scroll));
     // Surface caustic region (upper ocean when submerged)
     float shallowUW    = smoothstep(0.06, 0.18, u_scroll) * (1.0 - smoothstep(0.22, 0.32, u_scroll));
+    float thermocline  = exp(-pow((u_scroll - 0.22) / 0.085, 2.0));
+    float midnightZone = smoothstep(0.42, 0.64, u_scroll);
 
     // ── Horizon & sun ───────────────────────────────────────────────────
     float horizonY = mix(0.55, 0.49, nightBeacon) + (u_scroll < 0.25 ? u_scroll * 1.05 : 0.0);
@@ -164,11 +173,29 @@ const FRAGMENT_SHADER = `
     vec2 skyDir = vec2(p.x, uv.y - horizonY + 0.05);
     vec3 skyCol = skyColor(skyDir / max(length(skyDir),0.001), sunDir, nightBeacon);
 
+    // Atmospheric sun bloom: a soft, moving veil around the light source
+    // makes the horizon read as illuminated air rather than a flat gradient.
+    float sunDist = length(vec2(uv.x - sunX, (uv.y - horizonY) * 0.72));
+    float atmosphericGlow = exp(-sunDist * 18.0) * (1.0 - nightBeacon) * 0.28;
+    skyCol += vec3(1.0, 0.78, 0.52) * atmosphericGlow;
+
+    // Visible solar disk and layered aureole. Keeping the disk separate from
+    // the sky phase produces a convincing light source instead of a uniform
+    // blue wash across the whole sky.
+    vec2 sunCenter = vec2(sunX, horizonY + 0.23 + sin(u_time * 0.04) * 0.008);
+    float sunRadius = length((uv - sunCenter) * vec2(aspect, 1.0));
+    float sunCore = 1.0 - smoothstep(0.018, 0.026, sunRadius);
+    float sunAureole = exp(-sunRadius * 13.0);
+    float sunFade = 1.0 - nightBeacon;
+    skyCol += vec3(1.0, 0.90, 0.66) * sunCore * 1.8 * sunFade;
+    skyCol += vec3(1.0, 0.62, 0.30) * sunAureole * 0.34 * sunFade;
+
     // Stratocumulus cloud layer
     float cn1 = fbm(vec2(p.x*1.1 + u_time*0.009, skyT*4.2));
     float cn2 = fbm(vec2(p.x*2.4 - u_time*0.007 + 3.1, skyT*6.8));
     float clouds = smoothstep(0.44, 0.62, cn1) * 0.22 + smoothstep(0.48, 0.64, cn2)*0.12;
     skyCol = mix(skyCol, vec3(0.82,0.88,0.94)*mix(1.0,0.4,nightBeacon), clouds*(1.0-skyT*0.6));
+    skyCol *= 1.0 - clouds * 0.16 * sunFade;
 
     // Lighthouse sweep
     float sweepAngle = sin(u_time * 0.52) * 0.65 + 0.35;
@@ -219,15 +246,40 @@ const FRAGMENT_SHADER = `
     vec3 H = normalize(L+V);
     float spec = pow(max(dot(N,H),0.0), 88.0);
     float specCorridor = exp(-abs((uv.x-0.5-(sunX-0.5))*aspect + N.x*0.5)*mix(8.0,14.0,waterDist));
+    float sunTrack = exp(-abs(uv.x - sunX) * mix(7.0, 22.0, waterDist));
+    sunTrack *= smoothstep(0.05, 0.9, hC) * (1.0 - nightBeacon);
     vec3 daySpec  = vec3(0.94,0.97,1.00)*(spec*1.8+specCorridor*0.42*smoothstep(0.5,1.1,hC))*(1.0-nightBeacon);
     vec3 nightSpec= vec3(0.96,0.74,0.44)*(spec*2.1+specCorridor*0.58*smoothstep(0.5,1.1,hC))*nightBeacon;
-    waterCol += daySpec + nightSpec;
+    waterCol += daySpec + nightSpec + vec3(1.0, 0.78, 0.44) * sunTrack * 0.22;
+
+    // Wind-driven micro ripples. The broad Gerstner-like surface above gives
+    // the horizon its shape; this finer layer supplies changing highlights
+    // in the foreground so the ocean does not feel like a static texture.
+    float rippleNoise = noise(waterWorld * 2.8 + vec2(u_time * 0.20, -u_time * 0.13));
+    float microRipples = pow(
+      max(0.0, sin(waterWorld.x * 7.0 + waterWorld.y * 2.1 + rippleNoise * 2.4 + u_time * 0.7)),
+      18.0
+    );
+    microRipples *= smoothstep(0.06, 0.70, waterDist) * (1.0 - nightBeacon * 0.35);
+    waterCol += vec3(0.24, 0.52, 0.62) * microRipples * 0.16;
+
+    // Pointer/tap impact traveling through the surface. The ring decays in
+    // both brightness and width so it feels like a real disturbance, not a
+    // permanent graphic overlay.
+    float rippleAge = max(0.0, u_time - u_ripple.z);
+    float rippleDistance = length((uv - u_ripple.xy) * vec2(aspect, 1.0));
+    float rippleFront = exp(-rippleAge * 1.8) *
+      exp(-abs(rippleDistance - rippleAge * 0.18) * 32.0);
+    float rippleReflection = rippleFront * (0.25 + 0.75 * smoothstep(0.08, 0.8, hC));
+    waterCol += vec3(0.24, 0.70, 0.82) * rippleReflection * 0.72;
 
     // Whitecap foam
     float steep = length(vec2((hC-hX)/eps,(hC-hZ)/eps));
     float foamM = smoothstep(0.62,1.35,steep)*smoothstep(0.30,0.95,hC);
     float foamD = noise(waterWorld*5.5 + vec2(u_time*0.45,-u_time*0.33));
     foamM *= smoothstep(0.32,0.88,foamD)*(1.0-waterDist*0.4);
+    float foamSpark = smoothstep(0.72, 0.98, noise(waterWorld * 11.0 + u_time * 0.28));
+    foamM += foamSpark * smoothstep(0.12, 0.52, waterDist) * 0.16;
     vec3 foamColor = mix(vec3(0.84,0.92,0.96),vec3(0.95,0.80,0.56),nightBeacon*0.5);
     waterCol = mix(waterCol, foamColor, clamp(foamM*0.72,0.0,1.0));
 
@@ -253,6 +305,9 @@ const FRAGMENT_SHADER = `
     vec3 uwBot = mix(epipelagicBot, bathypelagicCol, smoothstep(0.17,0.58,u_scroll));
     vec3 uwCol = mix(uwBot, uwTop, pow(uv.y, 1.1));
     uwCol *= beersExt;
+    // The thermocline is a real transition layer: suspended material and
+    // temperature gradients soften contrast before the water turns blue-black.
+    uwCol = mix(uwCol, uwCol * vec3(0.72, 0.88, 1.08) + vec3(0.004, 0.018, 0.026), thermocline * 0.32);
 
     // ── Snell's Window (view upward from underwater) ─────────────────────
     float snellR = 0.78;
@@ -321,8 +376,28 @@ const FRAGMENT_SHADER = `
     float bioPulse = 0.5 + 0.5*sin(u_time*2.1 + hash(floor(bioUV*3.0))*18.0);
     uwCol += vec3(0.10,0.70,0.90)*bio*bioPulse*bioDepth*0.55;
 
+    // A faint particulate light cone gives the deeper water a tangible
+    // volume and reacts to the same moving source as the god-rays.
+    float volumeNoise = fbm(vec2(p.x * 1.4 + u_time * 0.018, uv.y * 3.2 - u_time * 0.025));
+    float lightVolume = smoothstep(0.18, 0.82, volumeNoise) *
+      smoothstep(0.10, 0.32, u_scroll) * (1.0 - abyssFactor * 0.7);
+    uwCol += vec3(0.025, 0.11, 0.16) * lightVolume * 0.32;
+    uwCol += vec3(0.006, 0.035, 0.052) * thermocline * (1.0 - uv.y) * 0.35;
+    uwCol += vec3(0.002, 0.008, 0.016) * midnightZone * smoothstep(0.25, 0.9, uv.y);
+
     // ── Compose surface + underwater ─────────────────────────────────────
     vec3 finalCol = mix(surfaceScene, uwCol, submerge);
+
+    // Keep a physically plausible ambient floor in the darkest parts of the
+    // scene. Real water never falls to absolute black: scattered blue light
+    // and atmospheric haze remain visible even below the photic zone.
+    float ambientFade = smoothstep(0.0, 1.0, 1.0 - uv.y);
+    vec3 ambientFloor = mix(
+      vec3(0.012, 0.032, 0.055),
+      vec3(0.035, 0.105, 0.145),
+      ambientFade * (1.0 - abyssFactor * 0.65)
+    );
+    finalCol += ambientFloor * 0.42;
 
     // ── Optical lens vignette ─────────────────────────────────────────────
     float vig = smoothstep(1.22, 0.22, length(p*vec2(0.74,0.95)));
@@ -351,6 +426,7 @@ export function OceanicCanvas({ scrollProgress, reducedMotion, introProgress }) 
   const scrollRef = useRef(scrollProgress);
   const introRef = useRef(introProgress);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
+  const rippleRef = useRef({ x: 0.5, y: 0.72, at: -100 });
 
   useEffect(() => {
     scrollRef.current = scrollProgress;
@@ -424,6 +500,7 @@ export function OceanicCanvas({ scrollProgress, reducedMotion, introProgress }) 
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error("Ocean shader compilation failed:", gl.getShaderInfoLog(shader));
         gl.deleteShader(shader);
         return null;
       }
@@ -438,7 +515,10 @@ export function OceanicCanvas({ scrollProgress, reducedMotion, introProgress }) 
     gl.attachShader(program, vs);
     gl.attachShader(program, fs);
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error("Ocean shader program link failed:", gl.getProgramInfoLog(program));
+      return;
+    }
 
     gl.useProgram(program);
 
@@ -461,6 +541,7 @@ export function OceanicCanvas({ scrollProgress, reducedMotion, introProgress }) 
     const uIntro = gl.getUniformLocation(program, "u_intro");
     const uOctaves = gl.getUniformLocation(program, "u_octaves");
     const uFbmOctaves = gl.getUniformLocation(program, "u_fbmOctaves");
+    const uRipple = gl.getUniformLocation(program, "u_ripple");
 
     // Device-tier starting point: phones and low-core-count machines start
     // with fewer wave octaves and a lower internal render resolution, since
@@ -498,6 +579,15 @@ export function OceanicCanvas({ scrollProgress, reducedMotion, introProgress }) 
     let startTime = performance.now();
     let hiddenAt = 0;
     let smoothScroll = scrollRef.current;
+    const onPointerDown = (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      rippleRef.current = {
+        x: event.clientX / Math.max(window.innerWidth, 1),
+        y: 1.0 - event.clientY / Math.max(window.innerHeight, 1),
+        at: performance.now(),
+      };
+    };
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
 
     // Rolling frame-time average with hysteresis: a sustained slow patch
     // trades render resolution, then wave detail, for speed; a sustained
@@ -541,6 +631,14 @@ export function OceanicCanvas({ scrollProgress, reducedMotion, introProgress }) 
       gl.uniform1f(uIntro, introRef.current);
       gl.uniform1f(uOctaves, octaves);
       gl.uniform1f(uFbmOctaves, fbmOctaves);
+      gl.uniform3f(
+        uRipple,
+        rippleRef.current.x,
+        rippleRef.current.y,
+        rippleRef.current.at > 0
+          ? (rippleRef.current.at - startTime) * 0.001
+          : -100
+      );
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       rafId = requestAnimationFrame(render);
@@ -567,6 +665,7 @@ export function OceanicCanvas({ scrollProgress, reducedMotion, introProgress }) 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("resize", applyCanvasSize);
+      window.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [reducedMotion]);
@@ -598,6 +697,7 @@ export function OceanicCanvas({ scrollProgress, reducedMotion, introProgress }) 
 export function OceanParticles({ scrollProgress }) {
   const canvasRef = useRef(null);
   const stateRef  = useRef(null);
+  const disturbanceRef = useRef({ x: 0.5, y: 0.5, at: -100 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -612,12 +712,34 @@ export function OceanParticles({ scrollProgress }) {
       /Mobi|Android|iPhone/i.test(navigator.userAgent || "");
 
     // ── Resize ────────────────────────────────────────────────────────────
+    // Logical (CSS-pixel) dimensions drive every position calculation below;
+    // the canvas's actual pixel buffer is oversized by devicePixelRatio and
+    // the context transform scaled to match, so creatures stay crisp on
+    // retina displays and most phones instead of rendering soft/blurry.
+    // Capped at 2x so very high-DPR phones don't pay for 3x+ overdraw.
+    const dims = { w: window.innerWidth, h: window.innerHeight };
     const resize = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dims.w = window.innerWidth;
+      dims.h = window.innerHeight;
+      canvas.width = Math.round(dims.w * dpr);
+      canvas.height = Math.round(dims.h * dpr);
+      canvas.style.width = `${dims.w}px`;
+      canvas.style.height = `${dims.h}px`;
+      // setTransform (not scale) so repeated resizes don't compound.
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener("resize", resize);
+    const onPointerDown = (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      disturbanceRef.current = {
+        x: event.clientX / Math.max(window.innerWidth, 1),
+        y: event.clientY / Math.max(window.innerHeight, 1),
+        at: performance.now(),
+      };
+    };
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
 
     // ── Seed bubbles ──────────────────────────────────────────────────────
     const BUBBLE_COUNT = lowPower ? 34 : 68;
@@ -719,12 +841,22 @@ export function OceanParticles({ scrollProgress }) {
           },
         ];
 
+    // A few distant seabirds anchor the scale of the horizon and make the
+    // surface feel like a living environment before the dive begins.
+    const birds = Array.from({ length: lowPower ? 2 : 5 }, (_, i) => ({
+      x: 0.12 + Math.random() * 0.76,
+      y: 0.14 + Math.random() * 0.18,
+      speed: (0.000018 + Math.random() * 0.000018) * (i % 2 ? 1 : -1),
+      scale: 4 + Math.random() * 4,
+      phase: Math.random() * Math.PI * 2,
+    }));
+
     // ── Draw a single fish silhouette ─────────────────────────────────────
     // Each type has a distinct body shape for variety
     const drawFish = (ctx, f, t) => {
       const { x, y, scale, dir, opacity, tailPhase, type } = f;
-      const cx = x * canvas.width;
-      const cy = y * canvas.height;
+      const cx = x * dims.w;
+      const cy = y * dims.h;
       const tailWag = Math.sin(t * 2.8 + tailPhase) * 0.28;
 
       ctx.save();
@@ -733,8 +865,14 @@ export function OceanParticles({ scrollProgress }) {
       ctx.globalAlpha = opacity;
 
       if (type === 0) {
-        // Small baitfish — streamlined teardrop
-        ctx.fillStyle = "rgba(160,210,230,1)";
+        // Small baitfish — streamlined teardrop. Countershading (a darker
+        // "dorsal" top fading to a lighter "belly") is the single strongest
+        // visual cue that reads as a real fish rather than a flat sticker.
+        const bodyGrad = ctx.createLinearGradient(0, -scale * 0.2, 0, scale * 0.2);
+        bodyGrad.addColorStop(0, "rgba(118,178,202,1)");
+        bodyGrad.addColorStop(0.55, "rgba(160,210,230,1)");
+        bodyGrad.addColorStop(1, "rgba(206,232,240,1)");
+        ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.ellipse(0, 0, scale * 0.52, scale * 0.18, 0, 0, Math.PI * 2);
         ctx.fill();
@@ -751,8 +889,12 @@ export function OceanParticles({ scrollProgress }) {
         ctx.arc(scale * 0.32, -scale * 0.04, scale * 0.06, 0, Math.PI * 2);
         ctx.fill();
       } else if (type === 1) {
-        // Mid reef fish — deeper body, dorsal fin
-        ctx.fillStyle = "rgba(90,170,195,1)";
+        // Mid reef fish — deeper body, dorsal fin, countershaded gradient
+        const bodyGrad = ctx.createLinearGradient(0, -scale * 0.26, 0, scale * 0.26);
+        bodyGrad.addColorStop(0, "rgba(52,122,148,1)");
+        bodyGrad.addColorStop(0.55, "rgba(90,170,195,1)");
+        bodyGrad.addColorStop(1, "rgba(152,206,222,1)");
+        ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.ellipse(0, 0, scale * 0.48, scale * 0.24, 0, 0, Math.PI * 2);
         ctx.fill();
@@ -780,8 +922,12 @@ export function OceanParticles({ scrollProgress }) {
         ctx.arc(scale*0.29, -scale*0.06, scale*0.024, 0, Math.PI*2);
         ctx.fill();
       } else {
-        // Lanternfish — elongated, photophore dots
-        ctx.fillStyle = "rgba(50,120,160,1)";
+        // Lanternfish — elongated, photophore dots, countershaded gradient
+        const bodyGrad = ctx.createLinearGradient(0, -scale * 0.16, 0, scale * 0.16);
+        bodyGrad.addColorStop(0, "rgba(24,74,108,1)");
+        bodyGrad.addColorStop(0.55, "rgba(50,120,160,1)");
+        bodyGrad.addColorStop(1, "rgba(96,166,196,1)");
+        ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.ellipse(0, 0, scale*0.62, scale*0.16, 0, 0, Math.PI*2);
         ctx.fill();
@@ -817,8 +963,8 @@ export function OceanParticles({ scrollProgress }) {
     // that wave independently, drifting slowly upward through the water.
     const drawJellyfish = (ctx, j, t) => {
       const { x, y, scale, opacity, pulsePhase, hue, tentacles } = j;
-      const cx = x * canvas.width;
-      const cy = y * canvas.height;
+      const cx = x * dims.w;
+      const cy = y * dims.h;
       const pulse = 0.82 + Math.sin(t * j.pulseSpeed + pulsePhase) * 0.18;
       const core = hue === "teal" ? "124, 224, 208" : "182, 150, 226";
 
@@ -842,7 +988,13 @@ export function OceanParticles({ scrollProgress }) {
       ctx.quadraticCurveTo(scale * 0.62 * pulse, -scale * 0.95, scale * 0.62 * pulse, 0);
       ctx.quadraticCurveTo(0, scale * 0.22, -scale * 0.62 * pulse, 0);
       ctx.closePath();
-      ctx.fillStyle = `rgba(${core}, 0.55)`;
+      // Volumetric gradient — brighter at the crown where bioluminescence
+      // concentrates, softer toward the rim — instead of one flat tint.
+      const bellGrad = ctx.createLinearGradient(0, -scale * 0.98, 0, scale * 0.22);
+      bellGrad.addColorStop(0, `rgba(${core}, 0.78)`);
+      bellGrad.addColorStop(0.55, `rgba(${core}, 0.5)`);
+      bellGrad.addColorStop(1, `rgba(${core}, 0.22)`);
+      ctx.fillStyle = bellGrad;
       ctx.fill();
       ctx.strokeStyle = `rgba(${core}, 0.8)`;
       ctx.lineWidth = 0.6;
@@ -864,13 +1016,17 @@ export function OceanParticles({ scrollProgress }) {
 
     // ── Draw the distant ray — a slow, wide silhouette for scale ─────────
     const drawRay = (ctx, r, t) => {
-      const cx = r.x * canvas.width;
-      const cy = r.y * canvas.height;
+      const cx = r.x * dims.w;
+      const cy = r.y * dims.h;
       const flap = Math.sin(t * 0.6 + r.wingPhase) * 0.22;
       ctx.save();
       ctx.translate(cx, cy);
       ctx.globalAlpha = r.opacity;
-      ctx.fillStyle = "rgba(60,100,130,1)";
+      const rayGrad = ctx.createLinearGradient(0, -r.scale * 0.42, 0, r.scale * 0.42);
+      rayGrad.addColorStop(0, "rgba(34,68,94,1)");
+      rayGrad.addColorStop(0.55, "rgba(60,100,130,1)");
+      rayGrad.addColorStop(1, "rgba(104,148,172,1)");
+      ctx.fillStyle = rayGrad;
       ctx.beginPath();
       ctx.moveTo(0, -r.scale * 0.12);
       ctx.quadraticCurveTo(r.scale * 0.5, -r.scale * (0.4 + flap), r.scale * 0.95, 0);
@@ -889,11 +1045,38 @@ export function OceanParticles({ scrollProgress }) {
       ctx.restore();
     };
 
+    const drawBird = (ctx, b, t) => {
+      const flap = Math.sin(t * 2.2 + b.phase) * b.scale * 0.28;
+      ctx.save();
+      ctx.translate(b.x * dims.w, b.y * dims.h);
+      ctx.globalAlpha = 0.18 * (b.opacity ?? 1);
+      ctx.strokeStyle = "rgba(240, 248, 250, 0.92)";
+      ctx.lineWidth = Math.max(0.7, b.scale * 0.12);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-b.scale, flap);
+      ctx.quadraticCurveTo(-b.scale * 0.42, -b.scale * 0.62 - flap, 0, 0);
+      ctx.quadraticCurveTo(b.scale * 0.42, -b.scale * 0.62 - flap, b.scale, flap);
+      ctx.stroke();
+      ctx.restore();
+    };
+
     // ── Animation loop ─────────────────────────────────────────────────────
     let rafId;
     let startTime = performance.now();
+    let hiddenAt = 0;
+    let frameCount = 0;
 
     const render = (now) => {
+      frameCount++;
+      // Low-power devices: draw creature frames at ~30fps instead of 60.
+      // The previous frame simply persists one extra tick (nothing is
+      // cleared) rather than flickering, so there's no visible difference —
+      // just roughly half the canvas work on phones and budget machines.
+      if (lowPower && frameCount % 2 === 0) {
+        rafId = requestAnimationFrame(render);
+        return;
+      }
       const t = (now - startTime) * 0.001;
       const scroll = stateRef.current ?? 0;
 
@@ -910,17 +1093,35 @@ export function OceanParticles({ scrollProgress }) {
         Math.min(1, (scroll - 0.05) / 0.07) *
         Math.min(1, (0.70 - scroll) / 0.10)
       );
+      const reefVisibility = Math.max(0,
+        Math.min(1, (scroll - 0.10) / 0.07) *
+        Math.min(1, (0.38 - scroll) / 0.10)
+      );
+      const lanternVisibility = Math.max(0,
+        Math.min(1, (scroll - 0.28) / 0.10) *
+        Math.min(1, (0.70 - scroll) / 0.12)
+      );
 
-      const overallVisibility = Math.max(visibility, bioVisibility);
+      const overallVisibility = Math.max(visibility, reefVisibility, lanternVisibility);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, dims.w, dims.h);
+
+      // Distant birds remain above the waterline and slowly cross the frame.
+      const surfaceVisibility = Math.max(0, 1.0 - scroll * 12.0);
+      for (const b of birds) {
+        b.x += b.speed;
+        b.y += Math.sin(t * 0.18 + b.phase) * 0.000012;
+        if (b.x > 1.08) b.x = -0.08;
+        if (b.x < -0.08) b.x = 1.08;
+        drawBird(ctx, { ...b, phase: b.phase, opacity: surfaceVisibility }, t);
+      }
 
       if (overallVisibility < 0.005) {
         rafId = requestAnimationFrame(render);
         return;
       }
 
-      const W = canvas.width, H = canvas.height;
+      const W = dims.w, H = dims.h;
 
       // Marine snow — tiny drifting detritus for a sense of volume
       for (const sp of snow) {
@@ -983,8 +1184,19 @@ export function OceanParticles({ scrollProgress }) {
         if (f.x < -0.12) f.x = 1.12;
 
         const origY = f.y;
+        const disturbanceAge = (performance.now() - disturbanceRef.current.at) * 0.001;
+        const disturbanceDistance = Math.hypot(
+          f.x - disturbanceRef.current.x,
+          f.y - disturbanceRef.current.y
+        );
+        if (disturbanceAge >= 0 && disturbanceAge < 1.4 && disturbanceDistance < 0.28) {
+          const escapeDirection = f.x >= disturbanceRef.current.x ? 1 : -1;
+          f.x += escapeDirection * (0.0012 - disturbanceAge * 0.00055);
+          f.bob += 0.08;
+        }
         f.y += Math.sin(f.bob) * f.bobAmp;
-        const fVisibility = f.type === 2 ? bioVisibility : visibility;
+        const fVisibility =
+          f.type === 2 ? lanternVisibility : f.type === 1 ? reefVisibility : visibility;
         drawFish(ctx, { ...f, opacity: f.opacity * fVisibility }, t);
         f.y = origY;
       }
@@ -1000,11 +1212,28 @@ export function OceanParticles({ scrollProgress }) {
       rafId = requestAnimationFrame(render);
     };
 
+    // Stop driving this canvas entirely while the tab is backgrounded —
+    // same pattern as the WebGL ocean layer — and shift the clock forward
+    // by the hidden duration on return so motion doesn't jump.
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = null;
+        hiddenAt = performance.now();
+      } else if (!rafId) {
+        if (hiddenAt) startTime += performance.now() - hiddenAt;
+        rafId = requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
     rafId = requestAnimationFrame(render);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
 
